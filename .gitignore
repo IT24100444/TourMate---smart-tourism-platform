@@ -1,0 +1,34 @@
+# Python Bytecode & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.nox/
+.tox/
+
+# Virtual Environment
+.venv/
+env/
+venv/
+ENV/
+
+# Local Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.db
+*.sqlite3
+tourmate_ai.db
+
+# Logs & Temporary Files
+*.log
+scratch_*.py
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
