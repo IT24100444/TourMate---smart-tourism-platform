@@ -149,6 +149,22 @@ public class TourismPlaceService : ITourismPlaceService
         return ApiResponse<List<PlaceCategoryDto>>.Ok(dtos);
     }
 
+    public async Task<ApiResponse<bool>> ArchivePlaceAsync(Guid id, Guid userId)
+    {
+        var place = await _uow.TourismPlaces.GetByIdAsync(id);
+        if (place == null)
+            return ApiResponse<bool>.Fail("Place not found.");
+
+        // Business rule: Soft delete / Archive only
+        place.Status = PlaceStatus.Archived;
+        place.UpdatedAt = DateTime.UtcNow;
+
+        await _uow.TourismPlaces.UpdateAsync(place);
+        await _uow.SaveChangesAsync();
+
+        return ApiResponse<bool>.Ok(true, "Tourism place archived.");
+    }
+    
     public async Task<ApiResponse<bool>> ReviewPlaceApprovalAsync(Guid id, PlaceApprovalRequest request, Guid reviewerUserId)
     {
         var place = await _uow.TourismPlaces.GetByIdAsync(id);

@@ -63,7 +63,15 @@ public class TourismPlacesController : ControllerBase
         var result = await _placeService.UpdatePlaceAsync(id, request, userId);
         return result.Success ? Ok(result) : BadRequest(result);
     }
-
+    [Authorize(Roles = "Administrator")]
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> ArchivePlace(Guid id)
+    {
+        var userId = GetCurrentUserId();
+        var result = await _placeService.ArchivePlaceAsync(id, userId);
+        return result.Success ? Ok(result) : NotFound(result);
+    }
+    
     [Authorize(Roles = "Administrator")]
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> ReviewPlaceApproval(Guid id, [FromBody] PlaceApprovalRequest request)

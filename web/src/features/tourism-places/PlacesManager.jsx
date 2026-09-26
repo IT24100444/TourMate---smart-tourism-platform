@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   MapPin, CheckCircle2, XCircle, Clock, Plus, Star,
-  ShieldAlert, Eye, Pencil, X, Image as ImageIcon, AlertCircle,
-  ChevronRight, RefreshCw, Compass
+  ShieldAlert, Eye, Pencil, Trash2, X, Image as ImageIcon, AlertCircle,
+  ChevronRight, RefreshCw, Compass, Check, Layers
 } from 'lucide-react';
 import apiClient from '../../api/client';
 
@@ -413,9 +413,15 @@ export default function PlacesManager() {
   const loadPlaces = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get('/tourism-places');
-      const allPlaces = res.data?.data || res.data?.items || [];
-      setPlaces(allPlaces);
+      // Load approved places (status = 3)
+      const approvedRes = await apiClient.get('/tourism-places', { params: { status: 3, pageSize: 100 } });
+      const approved = approvedRes.data?.data?.items || approvedRes.data?.items || [];
+
+      // Load pending tourist submissions (status = 2)
+      const pendingRes = await apiClient.get('/tourism-places', { params: { status: 2, pageSize: 100 } });
+      const pending = pendingRes.data?.data?.items || pendingRes.data?.items || [];
+
+      setPlaces([...approved, ...pending]);
     } catch (err) {
       showToast('Failed to load places from server.', 'error');
     } finally {
@@ -425,7 +431,7 @@ export default function PlacesManager() {
 
   useEffect(() => { loadPlaces(); }, [loadPlaces]);
 
-  // ── Derived lists (no filtering, just status split) ──
+  // ── Filtered lists ──
   const approvedPlaces = places.filter(p => p.statusName === 'Approved');
   const pendingPlaces = places.filter(p => p.statusName === 'PendingReview');
 
@@ -446,7 +452,7 @@ export default function PlacesManager() {
     await apiClient.post('/tourism-places', payload);
     showToast('Attraction created and is now live! ✅');
     setShowAddModal(false);
-    setActiveTab('approved');
+    setActiveTab('approved'); // stay on front approved list so new place is shown
     await loadPlaces();
   };
 
@@ -474,7 +480,7 @@ export default function PlacesManager() {
     await apiClient.post(`/tourism-places/${id}/approve`, { decision: 1, comments: 'Approved by admin.' });
     showToast('Place approved and is now live on the front page! ✅');
     setInspectPlace(null);
-    setActiveTab('approved');
+    setActiveTab('approved'); // switch to front approved tab so it is immediately visible
     await loadPlaces();
   };
 

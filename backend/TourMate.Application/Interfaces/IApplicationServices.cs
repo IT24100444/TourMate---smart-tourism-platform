@@ -18,6 +18,7 @@ public interface ITourismPlaceService
     Task<ApiResponse<TourismPlaceDto>> GetPlaceByIdAsync(Guid id);
     Task<ApiResponse<TourismPlaceDto>> CreatePlaceAsync(CreateTourismPlaceRequest request, Guid userId, bool isAdmin = false);
     Task<ApiResponse<TourismPlaceDto>> UpdatePlaceAsync(Guid id, UpdateTourismPlaceRequest request, Guid userId);
+    Task<ApiResponse<bool>> ArchivePlaceAsync(Guid id, Guid userId);
     Task<ApiResponse<bool>> ReviewPlaceApprovalAsync(Guid id, PlaceApprovalRequest request, Guid reviewerUserId);
     Task<ApiResponse<List<TourismPlaceDto>>> GetNearbyPlacesAsync(double lat, double lng, double radiusKm);
     Task<ApiResponse<List<PlaceCategoryDto>>> GetCategoriesAsync();
