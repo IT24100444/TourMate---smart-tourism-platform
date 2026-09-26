@@ -47,10 +47,10 @@ Tour Mate/
 
 | Component | Business Capability | Academic Lead | Distinct Agentic AI Contribution |
 |---|---|---|---|
-| **A** | Tourism Place Discovery & Destination Management | **Member 1** (Backend Lead) | **Tourism Discovery Agent**: Queries approved attractions with duration, distance, and reasons. |
-| **B** | Accommodation & Restaurant Management | **Member 2** (React Lead) | **Accommodation & Dining Agent**: Matches verified hotels/restaurants to budget & dates. |
-| **C** | Booking, Reservation & Traveller Engagement | **Member 3** (Flutter Lead) | **Booking Feasibility Agent**: Assesses slot availability, timing conflicts, and cancellation rules. |
-| **D** | Intelligent Trip Planning & Recommendation | **Member 4** (AI Lead) | **Planner / Coordinator Agent**: Graph orchestration, deterministic validation, and human approval pause. |
+| **A** | Tourism Place Discovery & Destination Management | **Member 1** (Full) | **Tourism Discovery Agent**: Queries approved attractions with duration, distance, and reasons. |
+| **B** | Accommodation & Restaurant Management | **Member 2** (Full) | **Accommodation & Dining Agent**: Matches verified hotels/restaurants to budget & dates. |
+| **C** | Booking, Reservation & Traveller Engagement | **Member 3** (Full) | **Booking Feasibility Agent**: Assesses slot availability, timing conflicts, and cancellation rules. |
+| **D** | Intelligent Trip Planning & Recommendation | **Member 4** (Full) | **Planner / Coordinator Agent**: Graph orchestration, deterministic validation, and human approval pause. |
 
 ---
 
