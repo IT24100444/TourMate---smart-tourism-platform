@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-800 min-h-screen font-sans;
+  }
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Blue Glass Morphism */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  box-shadow: 0 4px 24px rgba(30, 58, 138, 0.08);
+}
+
+.glass-panel-blue {
+  background: rgba(239, 246, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 16px rgba(30, 58, 138, 0.06);
+}
+
+/* Custom blue scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #eff6ff;
+}
+::-webkit-scrollbar-thumb {
+  background: #93c5fd;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero gradient background */
+.hero-gradient {
+  background: linear-gradient(135deg, #172554 0%, #1e3a8a 30%, #1d4ed8 60%, #2563eb 100%);
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(30, 58, 138, 0.15);
+}
+
+/* Animated gradient border */
+.animated-border {
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #3b82f6, #1e3a8a, #60a5fa) border-box;
+  border: 2px solid transparent;
+}
+
+/* Input focus blue ring */
+.input-blue {
+  @apply w-full px-4 py-3 rounded-xl border border-blue-200 bg-white text-slate-800
+         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+         transition-all duration-200 placeholder-slate-400;
+}
+
+/* Blue button primary */
+.btn-primary {
+  @apply bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600
+         text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200
+         shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] active:scale-[0.98];
+}
+
+/* Blue button outline */
+.btn-outline {
+  @apply border-2 border-blue-600 text-blue-700 hover:bg-blue-600 hover:text-white
+         font-semibold px-6 py-3 rounded-xl transition-all duration-200;
+}
+
+/* Section card */
+.section-card {
+  @apply bg-white rounded-2xl shadow-sm border border-blue-100 p-6;
+}
+
+/* Fade-in animation for landing page elements */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes heroFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-12px); }
+}
+@keyframes bgPan {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-fade-in-up   { animation: fadeInUp 0.8s ease-out forwards; }
+.animate-fade-in-left { animation: fadeInLeft 0.7s ease-out forwards; }
+.animate-hero-float   { animation: heroFloat 6s ease-in-out infinite; }
+.animate-bg-pan {
+  background-size: 200% 200%;
+  animation: bgPan 8s ease infinite;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
