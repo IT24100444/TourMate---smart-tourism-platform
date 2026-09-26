@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  AlertTriangle, 
-  Send, 
-  CheckCircle2, 
-  Clock, 
-  User, 
-  Building2, 
-  RefreshCw, 
-  X, 
+import {
+  AlertTriangle,
+  Send,
+  CheckCircle2,
+  Clock,
+  User,
+  Building2,
+  RefreshCw,
+  X,
   ShieldAlert,
   Calendar
 } from 'lucide-react';
@@ -160,11 +160,11 @@ export default function BookingComplaints() {
       prev.map((c) =>
         c.id === sentComplaintId
           ? {
-              ...c,
-              status: 'WarningSent',
-              adminWarningMessage: sentMessage,
-              resolvedAt: new Date().toISOString()
-            }
+            ...c,
+            status: 'WarningSent',
+            adminWarningMessage: sentMessage,
+            resolvedAt: new Date().toISOString()
+          }
           : c
       )
     );
@@ -192,9 +192,8 @@ export default function BookingComplaints() {
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed bottom-6 right-6 z-[999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl font-semibold text-sm ${
-            toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'
-          }`}
+          className={`fixed bottom-6 right-6 z-[999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl font-semibold text-sm ${toast.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'
+            }`}
         >
           <CheckCircle2 className="w-5 h-5" />
           {toast.msg}
@@ -273,11 +272,10 @@ export default function BookingComplaints() {
                       {c.bookingReference}
                     </span>
                     <span
-                      className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
-                        isWarningSent
+                      className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${isWarningSent
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse'
-                      }`}
+                        }`}
                     >
                       {isWarningSent ? 'Warning Dispatched' : 'Pending Review'}
                     </span>
@@ -409,3 +407,6 @@ export default function BookingComplaints() {
     </div>
   );
 }
+
+
+

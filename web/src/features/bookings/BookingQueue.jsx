@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { 
-  CheckCircle, 
-  Clock, 
-  User, 
-  History, 
+import {
+  CheckCircle,
+  Clock,
+  User,
+  History,
   CheckCheck,
   RefreshCw,
   AlertCircle,
@@ -58,13 +58,13 @@ export default function BookingQueue() {
       let statusOverrides = {};
       try {
         statusOverrides = JSON.parse(localStorage.getItem('tourmate_booking_status_overrides') || '{}');
-      } catch {}
+      } catch { }
 
       // Merge stored warnings from localStorage
       let storedWarnings = {};
       try {
         storedWarnings = JSON.parse(localStorage.getItem('tourmate_booking_warnings') || '{}');
-      } catch {}
+      } catch { }
 
       const finalList = rawList.map((b) => {
         const override = statusOverrides[b.id] || statusOverrides[b.bookingReference];
@@ -119,12 +119,12 @@ export default function BookingQueue() {
       let statusOverrides = {};
       try {
         statusOverrides = JSON.parse(localStorage.getItem('tourmate_booking_status_overrides') || '{}');
-      } catch {}
+      } catch { }
 
       let storedWarnings = {};
       try {
         storedWarnings = JSON.parse(localStorage.getItem('tourmate_booking_warnings') || '{}');
-      } catch {}
+      } catch { }
 
       const finalList = (mockData.bookings || []).map((b) => {
         const override = statusOverrides[b.id] || statusOverrides[b.bookingReference];
@@ -165,8 +165,8 @@ export default function BookingQueue() {
     }
   }, []);
 
-  useEffect(() => { 
-    loadBookings(false); 
+  useEffect(() => {
+    loadBookings(false);
   }, [loadBookings]);
 
   // Modal active check: pause background sync if business owner is in any dialog
@@ -321,13 +321,12 @@ export default function BookingQueue() {
     <div className="space-y-6">
       {/* Toast */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-[999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl font-semibold text-sm ${
-          toast.type === 'success' 
-            ? 'bg-emerald-600 text-white' 
+        <div className={`fixed bottom-6 right-6 z-[999] flex items-center gap-3 px-5 py-3 rounded-2xl shadow-2xl font-semibold text-sm ${toast.type === 'success'
+            ? 'bg-emerald-600 text-white'
             : toast.type === 'info'
-            ? 'bg-blue-600 text-white'
-            : 'bg-rose-600 text-white'
-        }`}>
+              ? 'bg-blue-600 text-white'
+              : 'bg-rose-600 text-white'
+          }`}>
           {toast.type === 'success' ? (
             <CheckCircle2 className="w-5 h-5" />
           ) : (
@@ -384,9 +383,9 @@ export default function BookingQueue() {
           </button>
 
           {/* Manual Refresh Button */}
-          <button 
-            onClick={() => loadBookings(false)} 
-            className="p-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-blue-100 shadow-sm transition-colors flex items-center gap-1.5 text-xs font-bold" 
+          <button
+            onClick={() => loadBookings(false)}
+            className="p-2 px-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-blue-100 shadow-sm transition-colors flex items-center gap-1.5 text-xs font-bold"
             title="Manual refresh"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-blue-600 ${loading || isRefreshingSilently ? 'animate-spin' : ''}`} />
@@ -401,9 +400,8 @@ export default function BookingQueue() {
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
-            className={`px-3.5 py-1.5 rounded-lg font-bold transition-all ${
-              statusFilter === status ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
-            }`}
+            className={`px-3.5 py-1.5 rounded-lg font-bold transition-all ${statusFilter === status ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
+              }`}
           >
             {status}
           </button>
@@ -434,31 +432,29 @@ export default function BookingQueue() {
                 <div
                   key={booking.id}
                   onClick={() => setSelectedBooking(booking)}
-                  className={`p-5 rounded-2xl border transition-all cursor-pointer bg-white relative ${
-                    hasWarning
+                  className={`p-5 rounded-2xl border transition-all cursor-pointer bg-white relative ${hasWarning
                       ? isSelected
                         ? 'border-rose-500 shadow-md ring-2 ring-rose-500/20 bg-rose-50/25'
                         : 'border-rose-300 hover:border-rose-400 bg-rose-50/10 shadow-xs'
-                      : isSelected 
-                        ? 'border-blue-500 shadow-md ring-2 ring-blue-500/20 bg-blue-50/20' 
+                      : isSelected
+                        ? 'border-blue-500 shadow-md ring-2 ring-blue-500/20 bg-blue-50/20'
                         : 'border-blue-100 hover:border-blue-300 hover:shadow-sm'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0 pr-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-xs font-mono text-blue-700 font-bold">{booking.bookingReference}</span>
-                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${
-                          isPending 
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse' 
-                            : isConfirmed 
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                            : isExpired
-                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                            : isRejected
-                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                            : 'bg-slate-100 text-slate-600 border border-slate-200'
-                        }`}>
+                        <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase ${isPending
+                            ? 'bg-amber-50 text-amber-700 border border-amber-200 animate-pulse'
+                            : isConfirmed
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : isExpired
+                                ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                                : isRejected
+                                  ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                          }`}>
                           {booking.statusName}
                         </span>
 
@@ -486,7 +482,7 @@ export default function BookingQueue() {
 
                       {/* Display Official Admin Warning Callout directly on the card */}
                       {hasWarning && (
-                        <div 
+                        <div
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedWarning(booking.warningMessage || 'Be careful about your booking. Approve bookings in right time.');
@@ -818,3 +814,4 @@ export default function BookingQueue() {
     </div>
   );
 }
+
