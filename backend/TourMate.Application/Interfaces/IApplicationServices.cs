@@ -14,7 +14,7 @@ public interface IAuthService
 
 public interface ITourismPlaceService
 {
-    Task<ApiResponse<List<TourismPlaceDto>>> GetPlacesAsync();
+    Task<ApiResponse<PagedResult<TourismPlaceDto>>> GetPlacesAsync(PlaceFilterParams filterParams);
     Task<ApiResponse<TourismPlaceDto>> GetPlaceByIdAsync(Guid id);
     Task<ApiResponse<TourismPlaceDto>> CreatePlaceAsync(CreateTourismPlaceRequest request, Guid userId, bool isAdmin = false);
     Task<ApiResponse<TourismPlaceDto>> UpdatePlaceAsync(Guid id, UpdateTourismPlaceRequest request, Guid userId);

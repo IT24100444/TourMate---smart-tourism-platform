@@ -15,18 +15,54 @@ public class TourismPlaceService : ITourismPlaceService
         _uow = uow;
     }
 
-    public async Task<ApiResponse<List<TourismPlaceDto>>> GetPlacesAsync()
+    public async Task<ApiResponse<PagedResult<TourismPlaceDto>>> GetPlacesAsync(PlaceFilterParams filterParams)
     {
-        var places = await _uow.TourismPlaces.GetAllAsync();
-        // Default: only approved places for public discovery
-        var query = places.Where(p => p.Status == PlaceStatus.Approved);
+        var all = await _uow.TourismPlaces.GetAllAsync();
+        var query = all.AsQueryable();
 
+        if (filterParams.Status.HasValue)
+        {
+            query = query.Where(p => p.Status == filterParams.Status.Value);
+        }
+        else
+        {
+            // Default: only approved places for public discovery
+            query = query.Where(p => p.Status == PlaceStatus.Approved);
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterParams.SearchTerm))
+        {
+            var term = filterParams.SearchTerm.Trim().ToLower();
+            query = query.Where(p => p.Name.ToLower().Contains(term) || p.Description.ToLower().Contains(term));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filterParams.District))
+        {
+            query = query.Where(p => p.District.Equals(filterParams.District, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (filterParams.CategoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == filterParams.CategoryId.Value);
+        }
+
+        var totalItems = query.Count();
         var items = query
             .OrderByDescending(p => p.AverageRating)
+            .Skip((filterParams.Page - 1) * filterParams.PageSize)
+            .Take(filterParams.PageSize)
             .Select(MapToDto)
             .ToList();
 
-        return ApiResponse<List<TourismPlaceDto>>.Ok(items);
+        var result = new PagedResult<TourismPlaceDto>
+        {
+            Items = items,
+            Page = filterParams.Page,
+            PageSize = filterParams.PageSize,
+            TotalItems = totalItems
+        };
+
+        return ApiResponse<PagedResult<TourismPlaceDto>>.Ok(result);
     }
 
     public async Task<ApiResponse<TourismPlaceDto>> GetPlaceByIdAsync(Guid id)
@@ -164,7 +200,7 @@ public class TourismPlaceService : ITourismPlaceService
 
         return ApiResponse<bool>.Ok(true, "Tourism place archived.");
     }
-    
+
     public async Task<ApiResponse<bool>> ReviewPlaceApprovalAsync(Guid id, PlaceApprovalRequest request, Guid reviewerUserId)
     {
         var place = await _uow.TourismPlaces.GetByIdAsync(id);
@@ -199,7 +235,7 @@ public class TourismPlaceService : ITourismPlaceService
     public async Task<ApiResponse<List<TourismPlaceDto>>> GetNearbyPlacesAsync(double lat, double lng, double radiusKm)
     {
         var places = await _uow.TourismPlaces.FindAsync(p => p.Status == PlaceStatus.Approved);
-
+        
         // Haversine formula calculation
         var nearby = places
             .Select(p => new

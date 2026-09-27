@@ -19,9 +19,9 @@ public class TourismPlacesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetPlaces()
+    public async Task<IActionResult> GetPlaces([FromQuery] PlaceFilterParams filterParams)
     {
-        var result = await _placeService.GetPlacesAsync();
+        var result = await _placeService.GetPlacesAsync(filterParams);
         return Ok(result);
     }
 
@@ -63,6 +63,7 @@ public class TourismPlacesController : ControllerBase
         var result = await _placeService.UpdatePlaceAsync(id, request, userId);
         return result.Success ? Ok(result) : BadRequest(result);
     }
+
     [Authorize(Roles = "Administrator")]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> ArchivePlace(Guid id)
@@ -71,7 +72,7 @@ public class TourismPlacesController : ControllerBase
         var result = await _placeService.ArchivePlaceAsync(id, userId);
         return result.Success ? Ok(result) : NotFound(result);
     }
-    
+
     [Authorize(Roles = "Administrator")]
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> ReviewPlaceApproval(Guid id, [FromBody] PlaceApprovalRequest request)
