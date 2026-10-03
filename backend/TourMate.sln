@@ -1,0 +1,46 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourMate.Domain", "TourMate.Domain\TourMate.Domain.csproj", "{C8D2A05F-633B-476B-9C5A-05EF0A0B3C29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourMate.Application", "TourMate.Application\TourMate.Application.csproj", "{330B9A61-2AF1-482D-87DD-72A9C98CB6E7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourMate.Infrastructure", "TourMate.Infrastructure\TourMate.Infrastructure.csproj", "{1AF256CC-C177-4064-849E-E7502CBEC9A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourMate.Api", "TourMate.Api\TourMate.Api.csproj", "{A9383EF0-5091-4EA6-8F39-B73B278FC510}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TourMate.UnitTests", "TourMate.UnitTests\TourMate.UnitTests.csproj", "{38476811-60B5-420D-A11F-5674F0C2DBFE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C8D2A05F-633B-476B-9C5A-05EF0A0B3C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8D2A05F-633B-476B-9C5A-05EF0A0B3C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8D2A05F-633B-476B-9C5A-05EF0A0B3C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8D2A05F-633B-476B-9C5A-05EF0A0B3C29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{330B9A61-2AF1-482D-87DD-72A9C98CB6E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{330B9A61-2AF1-482D-87DD-72A9C98CB6E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{330B9A61-2AF1-482D-87DD-72A9C98CB6E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{330B9A61-2AF1-482D-87DD-72A9C98CB6E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AF256CC-C177-4064-849E-E7502CBEC9A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AF256CC-C177-4064-849E-E7502CBEC9A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AF256CC-C177-4064-849E-E7502CBEC9A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AF256CC-C177-4064-849E-E7502CBEC9A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9383EF0-5091-4EA6-8F39-B73B278FC510}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9383EF0-5091-4EA6-8F39-B73B278FC510}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9383EF0-5091-4EA6-8F39-B73B278FC510}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9383EF0-5091-4EA6-8F39-B73B278FC510}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38476811-60B5-420D-A11F-5674F0C2DBFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38476811-60B5-420D-A11F-5674F0C2DBFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38476811-60B5-420D-A11F-5674F0C2DBFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38476811-60B5-420D-A11F-5674F0C2DBFE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
