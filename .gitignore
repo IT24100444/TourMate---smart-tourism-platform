@@ -58,4 +58,3 @@ test_places_crud.py
 *.jks
 *.pfx
 *.p12
-*.p12
