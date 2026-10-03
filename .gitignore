@@ -1,34 +1,61 @@
-# Python Bytecode & Caches
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-.coverage
-htmlcov/
-.nox/
-.tox/
+﻿# OS and Editor Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosv
+*.userprefs
+*.ide/
+*.swp
+*~
 
-# Virtual Environment
-.venv/
-env/
-venv/
-ENV/
+# .NET / C# Rebuildable Outputs
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+*.VisualState.xml
+TestResults/
+*.sublime-workspace
 
-# Local Environment & Secrets
+# Node / React / Web Artifacts
+node_modules/
+dist/
+build/
+.npm/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Flutter / Dart / Mobile Artifacts
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+android/local.properties
+android/.gradle/
+**/Flutter/ephemeral/
+*.iml
+app-release.apk
+*.apk
+*.aab
+
+# Local Environment Secrets & Scratch Files
 .env
 .env.local
 .env.*.local
-*.db
-*.sqlite3
-tourmate_ai.db
-
-# Logs & Temporary Files
-*.log
 scratch_*.py
-
-# IDE & Editor files
-.vscode/
-.idea/
-*.swp
-*~
-.DS_Store
+test_passwords.py
+test_login_api.py
+test_places_crud.py
+*.key
+*.keystore
+*.jks
+*.pfx
+*.p12
+*.p12
