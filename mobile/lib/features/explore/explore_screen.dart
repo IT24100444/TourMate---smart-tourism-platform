@@ -72,7 +72,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
     String? error;
     String selectedDistrict = 'Badulla';
 
-    final districts = ['Badulla', 'Matale', 'Galle', 'Kandy', 'Nuwara Eliya', 'Colombo', 'Anuradhapura'];
+    final districts = ['Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Monaragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya'];
 
     showModalBottomSheet(
       context: context,
