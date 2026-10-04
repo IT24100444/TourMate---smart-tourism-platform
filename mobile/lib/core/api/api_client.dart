@@ -8,7 +8,7 @@ class ApiClient {
       return 'http://localhost:5000/api/v1';
     }
     if (defaultTargetPlatform == TargetPlatform.android) {
-      return 'http://192.168.8.100:5000/api/v1';
+      return 'http://10.0.2.2:5000/api/v1';
     }
     return 'http://localhost:5000/api/v1';
   }
