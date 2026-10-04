@@ -13,11 +13,34 @@ class ExploreScreen extends StatefulWidget {
 
 class _ExploreScreenState extends State<ExploreScreen> {
   String _selectedDistrict = 'All';
+  String _searchQuery = '';
+  String _sortOrder = 'Ascending';
   List<Map<String, dynamic>> _places = [];
   bool _isLoading = false;
   final Set<String> _favourites = {'p1'};
 
-  final List<String> _districts = ['All', 'Badulla', 'Matale', 'Galle', 'Kandy'];
+  List<Map<String, dynamic>> get _filteredPlaces {
+    List<Map<String, dynamic>> result = List.from(_places);
+    
+    if (_searchQuery.isNotEmpty) {
+      final query = _searchQuery.toLowerCase();
+      result = result.where((place) {
+        final name = (place['name'] ?? '').toString().toLowerCase();
+        final district = (place['district'] ?? '').toString().toLowerCase();
+        return name.contains(query) || district.contains(query);
+      }).toList();
+    }
+
+    result.sort((a, b) {
+      final nameA = (a['name'] ?? '').toString().toLowerCase();
+      final nameB = (b['name'] ?? '').toString().toLowerCase();
+      return _sortOrder == 'Ascending' ? nameA.compareTo(nameB) : nameB.compareTo(nameA);
+    });
+
+    return result;
+  }
+
+  final List<String> _districts = ['All', 'Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Monaragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya'];
 
   @override
   void initState() {
@@ -66,6 +89,24 @@ class _ExploreScreenState extends State<ExploreScreen> {
               setModalState(() => error = 'Description is required.');
               return;
             }
+            if (descCtrl.text.trim().length <= 10) {
+              setModalState(() => error = 'Description must be more than 10 characters.');
+              return;
+            }
+
+            final openingHoursStr = openingCtrl.text.trim();
+            if (openingHoursStr.isNotEmpty) {
+              final match = RegExp(r'^((?:[01]\d|2[0-3]):[0-5]\d)\s*-\s*((?:[01]\d|2[0-3]):[0-5]\d)$').firstMatch(openingHoursStr);
+              if (match == null) {
+                setModalState(() => error = 'Opening hours must be in HH:mm - HH:mm format.');
+                return;
+              }
+              if (match.group(1)!.compareTo(match.group(2)!) >= 0) {
+                setModalState(() => error = 'Opening time must be earlier than closing time.');
+                return;
+              }
+            }
+
             setModalState(() { isSaving = true; error = null; });
 
             // Get auth token if user is logged in
@@ -231,6 +272,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                             _label('Opening Hours'),
                             _field(openingCtrl, hint: '06:00 - 18:00'),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 4, left: 4),
+                              child: Text('Example: 06:00 - 18:00', style: TextStyle(fontSize: 11, color: AppTheme.textLight)),
+                            ),
                           ])),
                           const SizedBox(width: 10),
                           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -329,32 +374,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         children: [
-          // Subheader & Academic Badge
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryLight.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.primaryLight.withValues(alpha: 0.3)),
-                ),
-                child: const Text(
-                  'Component A (Member 1)',
-                  style: TextStyle(color: AppTheme.primaryBlue, fontSize: 11, fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text(
-                'Admin-Approved Destinations',
-                style: TextStyle(color: AppTheme.textMedium, fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
           // Search Bar
           TextField(
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val;
+              });
+            },
             style: const TextStyle(color: AppTheme.textDark, fontSize: 14),
             decoration: InputDecoration(
               hintText: 'Search Ella, Sigiriya, Kandy, Galle...',
@@ -379,38 +405,72 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ),
           const SizedBox(height: 14),
 
-          // District Filter Chips
-          SizedBox(
-            height: 38,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _districts.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final d = _districts[index];
-                final isSelected = _selectedDistrict == d;
-                return ChoiceChip(
-                  label: Text(d == 'All' ? 'All Districts' : d),
-                  selected: isSelected,
-                  onSelected: (val) {
-                    if (val) {
-                      setState(() => _selectedDistrict = d);
-                      _loadPlaces();
-                    }
-                  },
-                  selectedColor: AppTheme.primaryBlue,
-                  backgroundColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppTheme.textMedium,
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          // Filters
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.cardBorder),
                   ),
-                  side: BorderSide(
-                    color: isSelected ? AppTheme.primaryBlue : AppTheme.cardBorder,
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _selectedDistrict,
+                      isExpanded: true,
+                      icon: const Icon(Icons.arrow_drop_down, color: AppTheme.textMedium),
+                      style: const TextStyle(color: AppTheme.textDark, fontSize: 14, fontWeight: FontWeight.w500),
+                      dropdownColor: Colors.white,
+                      items: _districts.map((d) {
+                        return DropdownMenuItem(
+                          value: d,
+                          child: Text(d == 'All' ? 'All Districts' : d, overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null && val != _selectedDistrict) {
+                          setState(() => _selectedDistrict = val);
+                          _loadPlaces();
+                        }
+                      },
+                    ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: AppTheme.cardBorder),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _sortOrder,
+                      isExpanded: true,
+                      icon: const Icon(Icons.sort, color: AppTheme.textMedium, size: 18),
+                      style: const TextStyle(color: AppTheme.textDark, fontSize: 14, fontWeight: FontWeight.w500),
+                      dropdownColor: Colors.white,
+                      items: ['Ascending', 'Descending'].map((s) {
+                        return DropdownMenuItem(
+                          value: s,
+                          child: Text(s, overflow: TextOverflow.ellipsis),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        if (val != null && val != _sortOrder) {
+                          setState(() => _sortOrder = val);
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
 
@@ -435,7 +495,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${_places.length} verified',
+                  '${_filteredPlaces.length} verified',
                   style: const TextStyle(fontSize: 12, color: AppTheme.primaryBlue, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -446,7 +506,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           // Places List or Empty State
           if (_isLoading)
             const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()))
-          else if (_places.isEmpty)
+          else if (_filteredPlaces.isEmpty)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
               margin: const EdgeInsets.only(bottom: 16),
@@ -491,7 +551,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
               ),
             )
           else
-            ..._places.map((place) => _buildPlaceCard(place)),
+            ..._filteredPlaces.map((place) => _buildPlaceCard(place)),
 
         const SizedBox(height: 20),
 

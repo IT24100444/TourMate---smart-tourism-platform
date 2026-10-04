@@ -14,7 +14,7 @@ const DEFAULT_CATEGORIES = [
   { id: 'e1738497-5ede-420a-9ed1-5e8e1de43bf7', name: 'Coastal & Beach' },
 ];
 
-const DISTRICTS = ['Badulla', 'Matale', 'Galle', 'Kandy', 'Nuwara Eliya', 'Colombo', 'Trincomalee', 'Anuradhapura', 'Polonnaruwa'];
+const DISTRICTS = ['Ampara', 'Anuradhapura', 'Badulla', 'Batticaloa', 'Colombo', 'Galle', 'Gampaha', 'Hambantota', 'Jaffna', 'Kalutara', 'Kandy', 'Kegalle', 'Kilinochchi', 'Kurunegala', 'Mannar', 'Matale', 'Matara', 'Monaragala', 'Mullaitivu', 'Nuwara Eliya', 'Polonnaruwa', 'Puttalam', 'Ratnapura', 'Trincomalee', 'Vavuniya'];
 
 const EMPTY_FORM = {
   name: '',
@@ -79,6 +79,20 @@ function PlaceForm({ initial, onSubmit, onClose, title, submitLabel, categories 
     setError('');
     if (!form.name.trim()) { setError('Attraction name is required.'); return; }
     if (!form.description.trim()) { setError('Description is required.'); return; }
+    if (form.description.trim().length <= 10) { setError('Description must be more than 10 characters.'); return; }
+
+    if (form.openingHours) {
+      const match = form.openingHours.trim().match(/^((?:[01]\d|2[0-3]):[0-5]\d)\s*-\s*((?:[01]\d|2[0-3]):[0-5]\d)$/);
+      if (!match) {
+        setError('Opening hours must be in HH:mm - HH:mm format.');
+        return;
+      }
+      if (match[1] >= match[2]) {
+        setError('Opening time must be earlier than closing time.');
+        return;
+      }
+    }
+
     const validUrls = form.imageUrls.filter(u => u.trim());
     setSaving(true);
     try {
@@ -166,6 +180,7 @@ function PlaceForm({ initial, onSubmit, onClose, title, submitLabel, categories 
               <input type="text" placeholder="06:00 - 18:00" value={form.openingHours}
                 onChange={e => set('openingHours', e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <p className="text-[11px] text-slate-400 mt-1">Example: 06:00 - 18:00</p>
             </div>
             <div>
               <label className="block text-slate-700 font-bold mb-1.5">Visit Duration (min)</label>
