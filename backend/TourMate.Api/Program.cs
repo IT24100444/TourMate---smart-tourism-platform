@@ -10,7 +10,8 @@ using TourMate.Infrastructure.Persistence;
 var builder = WebApplication.CreateBuilder(args);
 
 // Bind to all interfaces so Android emulator (10.0.2.2) and LAN devices can reach the API
-builder.WebHost.UseUrls("http://0.0.0.0:5000");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 // 1. Add Infrastructure Services (EF Core, Neon PostgreSQL / InMemory, Repositories, Security, AI Client)
 builder.Services.AddInfrastructureServices(builder.Configuration);
