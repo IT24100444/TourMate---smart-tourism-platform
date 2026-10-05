@@ -1,12 +1,15 @@
 import asyncio
+import os
 import uuid
 
+import pytest
 from google.adk.runners import Runner
 from google.genai import types
 
 from app.agent import app as adk_app
 from app.app_utils import services
 
+pytestmark = pytest.mark.skipif(not os.environ.get("GOOGLE_API_KEY"), reason="Integration tests require GOOGLE_API_KEY")
 
 async def test_chat():
     runner = Runner(
