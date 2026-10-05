@@ -22,8 +22,8 @@ from google.genai import types
 
 from app.agent import root_agent
 
-
 pytestmark = pytest.mark.skipif(not os.environ.get("GOOGLE_API_KEY"), reason="Integration tests require GOOGLE_API_KEY")
+
 
 def test_agent_stream() -> None:
     """
