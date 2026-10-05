@@ -7,11 +7,11 @@ Now uses SQLAlchemy with a PostgreSQL connection (via DATABASE_URL) and falls ba
 import json
 import logging
 import os
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import Column, DateTime, Float, Integer, String, Text, create_engine
-from sqlalchemy.orm import declarative_base, Session, sessionmaker
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 logger = logging.getLogger("tourmate.database")
 
@@ -23,7 +23,7 @@ DATABASE_URL = os.getenv("DATABASE_URL", SQLITE_URL)
 def init_engine():
     try:
         eng = create_engine(DATABASE_URL, echo=False, future=True, pool_pre_ping=True)
-        with eng.connect() as conn:
+        with eng.connect():
             pass
         return eng
     except Exception as ex:
@@ -46,14 +46,14 @@ class Workflow(Base):
     status = Column(String, nullable=False)
     current_node = Column(String, nullable=False)
     state_json = Column(Text, nullable=False)
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
 
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
     workflow_id = Column(String, nullable=True)
     severity = Column(String, nullable=False)
     event_type = Column(String, nullable=False)
@@ -76,7 +76,7 @@ def save_workflow_state(
     total_estimated_lkr: float,
     status: str,
     current_node: str,
-    state_data: Dict[str, Any],
+    state_data: dict[str, Any],
 ) -> None:
     """Insert or update a workflow record using SQLAlchemy."""
     session = get_session()
@@ -101,12 +101,12 @@ def save_workflow_state(
             wf.status = status
             wf.current_node = current_node
             wf.state_json = state_json
-            wf.updated_at = datetime.now(timezone.utc)
+            wf.updated_at = datetime.now(UTC)
         session.commit()
     finally:
         session.close()
 
-def get_workflow_state(workflow_id: str) -> Optional[Dict[str, Any]]:
+def get_workflow_state(workflow_id: str) -> dict[str, Any] | None:
     """Return the stored workflow state as a dictionary, or None if not found."""
     session = get_session()
     try:
@@ -117,7 +117,7 @@ def get_workflow_state(workflow_id: str) -> Optional[Dict[str, Any]]:
     finally:
         session.close()
 
-def list_recent_workflows(limit: int = 10) -> List[Dict[str, Any]]:
+def list_recent_workflows(limit: int = 10) -> list[dict[str, Any]]:
     """Return a list of recent workflow summaries ordered by update time descending."""
     session = get_session()
     try:
@@ -154,8 +154,8 @@ def record_audit_log(
     severity: str,
     event_type: str,
     message: str,
-    workflow_id: Optional[str] = None,
-    details: Optional[Dict[str, Any]] = None,
+    workflow_id: str | None = None,
+    details: dict[str, Any] | None = None,
 ) -> None:
     """Insert an audit log entry."""
     session = get_session()
@@ -173,7 +173,7 @@ def record_audit_log(
     finally:
         session.close()
 
-def list_audit_logs(limit: int = 20) -> List[Dict[str, Any]]:
+def list_audit_logs(limit: int = 20) -> list[dict[str, Any]]:
     """Retrieve the most recent audit log entries."""
     session = get_session()
     try:

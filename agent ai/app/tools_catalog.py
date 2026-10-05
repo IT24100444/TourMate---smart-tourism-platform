@@ -3,23 +3,23 @@ Sri Lanka Tourism Tools Catalog & Knowledge Base for TourMate AI.
 Powers both direct agent calls and the external Model Context Protocol (MCP) Server.
 """
 
-from typing import Any, Dict, List, Optional
 import contextvars
+from typing import Any
 
 # Bi-directional shared context across sub-agents
-_shared_context: contextvars.ContextVar[Optional[Dict[str, Any]]] = contextvars.ContextVar("_shared_context", default=None)
+_shared_context: contextvars.ContextVar[dict[str, Any] | None] = contextvars.ContextVar("_shared_context", default=None)
 
-def set_shared_context(ctx_dict: Dict[str, Any]) -> None:
+def set_shared_context(ctx_dict: dict[str, Any]) -> None:
     """Sets the thread-local context dictionary for current sub-agent execution."""
     _shared_context.set(ctx_dict)
 
-def get_shared_context() -> Optional[Dict[str, Any]]:
+def get_shared_context() -> dict[str, Any] | None:
     """Returns the current shared context dictionary if active."""
     return _shared_context.get()
 
 
 # Comprehensive Sri Lanka Attractions Database
-ATTRACTIONS_CATALOG: List[Dict[str, Any]] = [
+ATTRACTIONS_CATALOG: list[dict[str, Any]] = [
     # Ella (Badulla District)
     {
         "name": "Nine Arch Bridge, Demodara",
@@ -159,7 +159,7 @@ ATTRACTIONS_CATALOG: List[Dict[str, Any]] = [
 ]
 
 # Accommodations and Dining Catalog
-BUSINESSES_CATALOG: List[Dict[str, Any]] = [
+BUSINESSES_CATALOG: list[dict[str, Any]] = [
     # Ella
     {
         "name": "Ella Gap Panoramic Eco Resort",
@@ -267,7 +267,7 @@ BUSINESSES_CATALOG: List[Dict[str, Any]] = [
 
 
 # Tool 1: Search Attractions
-def search_attractions(destination: str, category: str = "all", max_entry_fee: Optional[float] = None) -> List[Dict[str, Any]]:
+def search_attractions(destination: str, category: str = "all", max_entry_fee: float | None = None) -> list[dict[str, Any]]:
     """
     Finds verified Sri Lanka attractions by destination, category, and budget ceiling.
     """
@@ -294,7 +294,7 @@ def search_attractions(destination: str, category: str = "all", max_entry_fee: O
 
 
 # Tool 2: Search Accommodations & Dining
-def search_accommodations_and_dining(destination: str, venue_type: str = "all", max_cost_lkr: Optional[float] = None) -> List[Dict[str, Any]]:
+def search_accommodations_and_dining(destination: str, venue_type: str = "all", max_cost_lkr: float | None = None) -> list[dict[str, Any]]:
     """
     Finds verified tourist hotels, guest houses, and restaurants for a destination.
     """
@@ -322,7 +322,7 @@ def search_accommodations_and_dining(destination: str, venue_type: str = "all", 
 
 # Tool 3: Calculate Budget Feasibility
 def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activities_cost: float,
-                                 budget_limit_lkr: float, transport_buffer_lkr: float = 5500.0) -> Dict[str, Any]:
+                                 budget_limit_lkr: float, transport_buffer_lkr: float = 5500.0) -> dict[str, Any]:
     """
     Performs deterministic financial math including local tuk-tuk / vehicle transport buffer.
     """
@@ -352,7 +352,7 @@ def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activiti
 
 
 # Tool 4: Check Weather & Seasonality
-def check_weather_and_seasonality(destination: str, travel_month: str = "current") -> Dict[str, Any]:
+def check_weather_and_seasonality(destination: str, travel_month: str = "current") -> dict[str, Any]:
     """
     Provides climate, monsoon patterns, and packing advice for Sri Lankan regions.
     """
@@ -395,7 +395,7 @@ def check_weather_and_seasonality(destination: str, travel_month: str = "current
 
 
 # Tool 5: Get Destination Insights
-def get_destination_insights(destination: str) -> Dict[str, Any]:
+def get_destination_insights(destination: str) -> dict[str, Any]:
     """
     Returns cultural etiquette, emergency numbers, and transit tips.
     """
@@ -418,7 +418,7 @@ def get_destination_insights(destination: str) -> Dict[str, Any]:
 
 
 # Tool 6: Search Excel Partner Discounts
-def search_excel_partner_offers_tool(query: str, location: Optional[str] = None) -> List[Dict[str, Any]]:
+def search_excel_partner_offers_tool(query: str, location: str | None = None) -> list[dict[str, Any]]:
     """
     Searches internal partner discount database (hotels_and_restaurants_offers.xlsx) for exclusive deals.
     """
@@ -427,7 +427,7 @@ def search_excel_partner_offers_tool(query: str, location: Optional[str] = None)
 
 
 # Tool 7: Search Live Web Accommodation & Dining
-def search_live_web_accommodation_tool(query: str, location: Optional[str] = None) -> List[Dict[str, Any]]:
+def search_live_web_accommodation_tool(query: str, location: str | None = None) -> list[dict[str, Any]]:
     """
     Performs live web search for hotels, resorts, restaurants, ratings, and operating hours in Sri Lanka.
     """

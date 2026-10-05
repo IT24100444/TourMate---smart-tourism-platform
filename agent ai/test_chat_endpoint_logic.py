@@ -1,10 +1,12 @@
 import asyncio
-import re
 import uuid
-from app.agent import app as adk_app
-from app.app_utils import services
+
 from google.adk.runners import Runner
 from google.genai import types
+
+from app.agent import app as adk_app
+from app.app_utils import services
+
 
 async def test_chat():
     runner = Runner(
@@ -15,11 +17,11 @@ async def test_chat():
     )
     user_id = "test_user_chat"
     session_id = f"sess_{uuid.uuid4().hex[:12]}"
-    
+
     msg = types.Content(role="user", parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")])
     tools_called = []
     text_parts = []
-    
+
     async for event in runner.run_async(
         user_id=user_id,
         session_id=session_id,
@@ -31,7 +33,7 @@ async def test_chat():
                     tools_called.append(p.function_call.name)
                 if getattr(p, "text", None):
                     text_parts.append(p.text)
-                    
+
     reply = "\n\n".join(text_parts)
     print("SESSION ID:", session_id)
     print("TOOLS CALLED:", tools_called)

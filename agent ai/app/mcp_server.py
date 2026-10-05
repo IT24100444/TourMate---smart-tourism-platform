@@ -3,14 +3,24 @@ Model Context Protocol (MCP) Server for TourMate Sri Lanka Tourism Platform.
 Exposes 5 standardized tools over stdio transport using the official MCP Python SDK.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from mcp.server.fastmcp import FastMCP
+
+from .tools_catalog import (
+    calculate_budget_feasibility as _calculate_budget_feasibility,
+)
+from .tools_catalog import (
+    check_weather_and_seasonality as _check_weather_and_seasonality,
+)
+from .tools_catalog import (
+    get_destination_insights as _get_destination_insights,
+)
+from .tools_catalog import (
+    search_accommodations_and_dining as _search_accommodations_and_dining,
+)
 from .tools_catalog import (
     search_attractions as _search_attractions,
-    search_accommodations_and_dining as _search_accommodations_and_dining,
-    calculate_budget_feasibility as _calculate_budget_feasibility,
-    check_weather_and_seasonality as _check_weather_and_seasonality,
-    get_destination_insights as _get_destination_insights,
 )
 
 # Initialize MCP Server
@@ -18,7 +28,7 @@ mcp = FastMCP("tourmate_tourism_mcp")
 
 
 @mcp.tool()
-def search_attractions(destination: str, category: str = "all", max_entry_fee: Optional[float] = None) -> List[Dict[str, Any]]:
+def search_attractions(destination: str, category: str = "all", max_entry_fee: float | None = None) -> list[dict[str, Any]]:
     """
     Search approved tourist attractions in Sri Lanka (e.g. Ella, Kandy, Galle, Sigiriya)
     filtered by destination, activity category, and maximum entry fee in LKR.
@@ -27,7 +37,7 @@ def search_attractions(destination: str, category: str = "all", max_entry_fee: O
 
 
 @mcp.tool()
-def search_accommodations_and_dining(destination: str, venue_type: str = "all", max_cost_lkr: Optional[float] = None) -> List[Dict[str, Any]]:
+def search_accommodations_and_dining(destination: str, venue_type: str = "all", max_cost_lkr: float | None = None) -> list[dict[str, Any]]:
     """
     Find verified hotels, eco-resorts, and authentic dining venues in Sri Lanka.
     venue_type can be 'Hotel', 'Restaurant', or 'all'.
@@ -37,7 +47,7 @@ def search_accommodations_and_dining(destination: str, venue_type: str = "all", 
 
 @mcp.tool()
 def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activities_cost: float,
-                                 budget_limit_lkr: float, transport_buffer_lkr: float = 5500.0) -> Dict[str, Any]:
+                                 budget_limit_lkr: float, transport_buffer_lkr: float = 5500.0) -> dict[str, Any]:
     """
     Calculates total proposed trip expenses including local transport/tuk-tuk buffer
     and verifies strict compliance with the tourist's budget ceiling in LKR.
@@ -52,7 +62,7 @@ def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activiti
 
 
 @mcp.tool()
-def check_weather_and_seasonality(destination: str, travel_month: str = "current") -> Dict[str, Any]:
+def check_weather_and_seasonality(destination: str, travel_month: str = "current") -> dict[str, Any]:
     """
     Retrieves climate profile, monsoon patterns, recommended gear, and best visiting hours
     for any destination in Sri Lanka.
@@ -61,7 +71,7 @@ def check_weather_and_seasonality(destination: str, travel_month: str = "current
 
 
 @mcp.tool()
-def get_destination_insights(destination: str) -> Dict[str, Any]:
+def get_destination_insights(destination: str) -> dict[str, Any]:
     """
     Retrieves cultural etiquette guidelines, local emergency contact numbers (Tourist Police 1912),
     and transit recommendations for a Sri Lankan destination.

@@ -7,29 +7,28 @@ import json
 import logging
 import re
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any
 
+from google.adk import Context
 from google.adk.agents import Agent, LlmAgent
 from google.adk.apps import App
 from google.adk.models import Gemini
-from google.adk.tools import AgentTool, request_input
-from google.adk.workflow import Edge, START, Workflow, node
-from google.adk import Context
+from google.adk.tools import AgentTool
+from google.adk.workflow import START, Edge, Workflow, node
 from google.genai import types
 
 from .config import config
-from .database import save_workflow_state, record_audit_log, get_workflow_state
+from .database import save_workflow_state
 from .security import run_security_checkpoint
 from .tools_catalog import (
-    search_attractions,
-    search_accommodations_and_dining,
     calculate_budget_feasibility,
     check_weather_and_seasonality,
     get_destination_insights,
+    search_accommodations_and_dining,
+    search_attractions,
     search_excel_partner_offers_tool,
     search_live_web_accommodation_tool,
     set_shared_context,
-    get_shared_context,
 )
 
 logger = logging.getLogger("tourmate.agent")
@@ -524,7 +523,7 @@ app = App(
 
 class WorkflowContext:
     """Lightweight context container providing state access for pipeline execution."""
-    def __init__(self, state: Dict[str, Any]):
+    def __init__(self, state: dict[str, Any]):
         self.state = state
 
 
@@ -533,13 +532,13 @@ async def run_tourmate_pipeline(
     objective: str,
     budget_lkr: float,
     destination: str,
-    workflow_id: Optional[str] = None
-) -> Dict[str, Any]:
+    workflow_id: str | None = None
+) -> dict[str, Any]:
     """Runs the complete multi-agent pipeline sequentially with state persistence."""
     wf_id = workflow_id if workflow_id else str(uuid.uuid4())
 
     # Initial state
-    state: Dict[str, Any] = {
+    state: dict[str, Any] = {
         "workflow_id": wf_id,
         "trip_id": trip_id,
         "objective": objective,

@@ -1,9 +1,12 @@
 import asyncio
 import traceback
-from app.agent import app as adk_app
-from app.app_utils import services
+
 from google.adk.runners import Runner
 from google.genai import types
+
+from app.agent import app as adk_app
+from app.app_utils import services
+
 
 async def main():
     runner = Runner(
@@ -14,12 +17,12 @@ async def main():
     )
     user_id = "test_user_direct"
     session_id = "session_direct_1"
-    
+
     new_message = types.Content(
         role="user",
         parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")]
     )
-    
+
     print("Starting runner.run_async...")
     try:
         async for event in runner.run_async(

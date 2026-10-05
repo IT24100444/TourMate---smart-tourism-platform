@@ -1,9 +1,15 @@
 ﻿"""Quick verification test for the multi-day pipeline fix."""
 import asyncio
 import sys
+
 sys.path.insert(0, ".")
-from app.agent import run_tourmate_pipeline, execute_booking_feasibility, WorkflowContext
+from app.agent import (
+    WorkflowContext,
+    execute_booking_feasibility,
+    run_tourmate_pipeline,
+)
 from app.tools_catalog import search_accommodations_and_dining, search_attractions
+
 
 async def test_budget_feasibility_5day():
     print("\n=== TEST: Budget feasibility scales correctly for 5-day trip ===")

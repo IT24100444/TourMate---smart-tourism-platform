@@ -42,8 +42,6 @@ AGENT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 @contextlib.asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    from app.agent import app as adk_app
-    from app.agent import root_agent
 
     runner = Runner(
         app=adk_app,
@@ -95,16 +93,17 @@ attach_reasoning_engine_routes(app)
 
 from fastapi import HTTPException
 from pydantic import BaseModel
-from app.schemas import PlanRequest, ResumeRequest
-from app.agent import run_tourmate_pipeline, app as adk_app, root_agent
+
+from app.agent import app as adk_app
+from app.agent import run_tourmate_pipeline
 from app.database import (
     get_workflow_state,
-    save_workflow_state,
-    list_recent_workflows,
     list_audit_logs,
-    get_db_connection,
-    record_audit_log
+    list_recent_workflows,
+    record_audit_log,
+    save_workflow_state,
 )
+from app.schemas import PlanRequest, ResumeRequest
 
 
 # ─── Conversational Chat Schema ────────────────────────────────────────────
@@ -117,6 +116,7 @@ class ChatRequest(BaseModel):
 # ─── Shared ADK Runner for Conversational Chat ──────────────────────────────
 # We create one runner per process and reuse it (session state is per session_id).
 import uuid
+
 from google.genai import types as genai_types
 
 _chat_runner: Runner | None = None
@@ -142,7 +142,6 @@ async def conversational_chat(request: ChatRequest):
     session memory so the agent can ask follow-up questions across turns.
     Returns: { session_id, reply, tools_called }
     """
-    import json
     session_id = request.session_id or f"sess_{uuid.uuid4().hex[:16]}"
     user_id = request.user_id or "tourist"
 

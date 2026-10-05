@@ -4,23 +4,24 @@ Searches the internal partner discount database (hotels_and_restaurants_offers.x
 for exclusive partner deals, room discounts, and dining offers across Sri Lanka.
 """
 
-import os
 import logging
-from typing import Any, Dict, List, Optional
+import os
+from typing import Any
+
 import pandas as pd
 
 logger = logging.getLogger("tourmate.tools.excel_search")
 
 DEFAULT_EXCEL_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "hotels_and_restaurants_offers.xlsx")
-_CACHED_EXCEL_RECORDS: Optional[List[Dict[str, Any]]] = None
-_CACHED_EXCEL_PATH: Optional[str] = None
+_CACHED_EXCEL_RECORDS: list[dict[str, Any]] | None = None
+_CACHED_EXCEL_PATH: str | None = None
 
 
 def search_excel_offers(
     query: str,
-    location: Optional[str] = None,
-    file_path: Optional[str] = None
-) -> List[Dict[str, Any]]:
+    location: str | None = None,
+    file_path: str | None = None
+) -> list[dict[str, Any]]:
     """
     Searches the internal Excel discount database by keyword, location, amenity, or category.
 
@@ -65,7 +66,7 @@ def search_excel_offers(
                     try:
                         f_offer = float(raw_offer)
                         if 0.0 < f_offer <= 1.0:
-                            discount_str = f"{int(round(f_offer * 100))}% OFF"
+                            discount_str = f"{round(f_offer * 100)}% OFF"
                         else:
                             discount_str = f"{int(f_offer)}% OFF"
                     except (ValueError, TypeError):
@@ -91,7 +92,7 @@ def search_excel_offers(
         except Exception as e:
             logger.error(f"Failed to read Excel discount database: {e}")
             return [{
-                "error": f"Failed to read Excel discount database: {str(e)}",
+                "error": f"Failed to read Excel discount database: {e!s}",
                 "is_partner_offer": False,
                 "status_message": "Error accessing internal offers spreadsheet."
             }]

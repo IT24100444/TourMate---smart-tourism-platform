@@ -5,10 +5,13 @@ and combined output payload synthesis.
 """
 
 import os
-import pytest
+
+from agents.accommodation_dining_agent import (
+    AccommodationDiningAgent,
+    process_accommodation_and_dining_request,
+)
 from tools.excel_search_tool import search_excel_offers
 from tools.web_search_tool import search_live_accommodation_and_dining
-from agents.accommodation_dining_agent import AccommodationDiningAgent, process_accommodation_and_dining_request
 
 TEST_EXCEL_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "hotels_and_restaurants_offers.xlsx")
 

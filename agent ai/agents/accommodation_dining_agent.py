@@ -6,7 +6,8 @@ and live web listings to deliver merged, high-value accommodation and dining rec
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field
 
 from tools.excel_search_tool import search_excel_offers
@@ -29,9 +30,9 @@ class SpecialPartnerOffer(BaseModel):
 class GeneralWebRecommendation(BaseModel):
     title: str = Field(description="Listing title or hotel name")
     snippet: str = Field(description="Key highlights, amenities, or menu specialty")
-    rating: Optional[str] = Field(default="N/A", description="Customer review rating")
-    operating_hours: Optional[str] = Field(default="N/A", description="Opening hours")
-    price_range: Optional[str] = Field(default="N/A", description="Estimated price range")
+    rating: str | None = Field(default="N/A", description="Customer review rating")
+    operating_hours: str | None = Field(default="N/A", description="Opening hours")
+    price_range: str | None = Field(default="N/A", description="Estimated price range")
     source: str = Field(description="Data source e.g. Live Web Search")
 
 
@@ -39,8 +40,8 @@ class AccommodationDiningResult(BaseModel):
     query: str = Field(description="Original search query")
     location: str = Field(description="Target location")
     total_partner_deals_found: int = Field(description="Number of special partner offers found")
-    special_partner_offers: List[Dict[str, Any]] = Field(default_factory=list, description="Exclusive partner deals from Excel DB")
-    general_web_recommendations: List[Dict[str, Any]] = Field(default_factory=list, description="Live web search recommendations")
+    special_partner_offers: list[dict[str, Any]] = Field(default_factory=list, description="Exclusive partner deals from Excel DB")
+    general_web_recommendations: list[dict[str, Any]] = Field(default_factory=list, description="Live web search recommendations")
     synthesis_summary: str = Field(description="Merged executive recommendation summary")
 
 
@@ -62,10 +63,10 @@ class AccommodationDiningAgent:
     Principal Agent class handling accommodation & dining requests via multi-source retrieval.
     """
 
-    def __init__(self, excel_path: Optional[str] = None):
+    def __init__(self, excel_path: str | None = None):
         self.excel_path = excel_path
 
-    def run(self, query: str, location: str = "") -> Dict[str, Any]:
+    def run(self, query: str, location: str = "") -> dict[str, Any]:
         """
         Executes the 3-step workflow:
         Step 1: Internal Excel Query
@@ -127,7 +128,7 @@ class AccommodationDiningAgent:
         return result_payload.model_dump()
 
 
-def process_accommodation_and_dining_request(query: str, location: str = "") -> Dict[str, Any]:
+def process_accommodation_and_dining_request(query: str, location: str = "") -> dict[str, Any]:
     """
     Functional helper entrypoint for the Accommodation & Dining Agent.
     """

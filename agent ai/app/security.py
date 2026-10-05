@@ -3,10 +3,10 @@ Security Checkpoint & Guardrails Layer for TourMate AI.
 Enforces PII redaction, prompt injection detection, and domain policy limits.
 """
 
-import json
 import logging
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any
+
 from .database import record_audit_log
 
 logger = logging.getLogger("tourmate.security")
@@ -51,7 +51,7 @@ MAX_BUDGET_LKR = 50_000_000.0  # LKR 50M maximum tourist ceiling
 MIN_BUDGET_LKR = 5_000.0       # Minimum realistic budget for day trip
 
 
-def scrub_pii(text: str) -> Tuple[str, List[str]]:
+def scrub_pii(text: str) -> tuple[str, list[str]]:
     """Redacts PII items and returns redacted text plus list of detected types."""
     redacted = text
     detected_types = []
@@ -64,7 +64,7 @@ def scrub_pii(text: str) -> Tuple[str, List[str]]:
     return redacted, detected_types
 
 
-def detect_prompt_injection(text: str) -> Tuple[bool, List[str]]:
+def detect_prompt_injection(text: str) -> tuple[bool, list[str]]:
     """Checks for prompt injection patterns and adversarial prompt overrides."""
     lower_text = text.lower()
     matched_patterns = []
@@ -76,7 +76,7 @@ def detect_prompt_injection(text: str) -> Tuple[bool, List[str]]:
     return len(matched_patterns) > 0, matched_patterns
 
 
-def validate_domain_rules(destination: str, budget_lkr: float) -> Tuple[bool, List[str]]:
+def validate_domain_rules(destination: str, budget_lkr: float) -> tuple[bool, list[str]]:
     """Validates domain-specific rules (destination existence, realistic budget bounds)."""
     errors = []
 
@@ -97,7 +97,7 @@ def validate_domain_rules(destination: str, budget_lkr: float) -> Tuple[bool, Li
 
 
 def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
-                            workflow_id: str = "temp") -> Dict[str, Any]:
+                            workflow_id: str = "temp") -> dict[str, Any]:
     """
     Executes the full Security Checkpoint:
     1. Redacts PII

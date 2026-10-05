@@ -1,14 +1,16 @@
 import asyncio
-import sys
 import io
+import sys
 
 # Ensure utf-8 output on Windows
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-from app.agent import app as adk_app
-from app.app_utils import services
 from google.adk.runners import Runner
 from google.genai import types
+
+from app.agent import app as adk_app
+from app.app_utils import services
+
 
 async def main():
     runner = Runner(
@@ -19,12 +21,12 @@ async def main():
     )
     user_id = "test_user_tourist"
     session_id = "session_tourist_100"
-    
+
     new_message = types.Content(
         role="user",
         parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")]
     )
-    
+
     print("=== Sending User Message ===")
     async for event in runner.run_async(
         user_id=user_id,

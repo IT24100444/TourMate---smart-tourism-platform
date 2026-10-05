@@ -4,10 +4,12 @@ import uuid
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
-from app.agent import app as adk_app
-from app.app_utils import services
 from google.adk.runners import Runner
 from google.genai import types
+
+from app.agent import app as adk_app
+from app.app_utils import services
+
 
 async def test_multiturn():
     runner = Runner(

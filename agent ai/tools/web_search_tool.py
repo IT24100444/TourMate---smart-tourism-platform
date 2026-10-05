@@ -4,14 +4,14 @@ Searches live web listings, customer ratings, menus, and operating hours for Sri
 Uses DuckDuckGo Search / Tavily API with automatic contextual enrichment and graceful offline fallbacks.
 """
 
-import os
 import logging
-from typing import Any, Dict, List, Optional
+import os
+from typing import Any
 
 logger = logging.getLogger("tourmate.tools.web_search")
 
 # Curated Web Hospitality Dataset for reliable fallback when live web API is throttled or offline
-FALLBACK_WEB_RESULTS: Dict[str, List[Dict[str, Any]]] = {
+FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
     "ella": [
         {
             "title": "98 Acres Resort & Spa - Top Ella Mountain Retreat",
@@ -97,8 +97,8 @@ FALLBACK_WEB_RESULTS: Dict[str, List[Dict[str, Any]]] = {
 
 def search_live_accommodation_and_dining(
     query: str,
-    location: Optional[str] = None
-) -> List[Dict[str, Any]]:
+    location: str | None = None
+) -> list[dict[str, Any]]:
     """
     Performs live web search for hotel, resort, and restaurant listings, customer ratings,
     operating hours, and menus in Sri Lanka.

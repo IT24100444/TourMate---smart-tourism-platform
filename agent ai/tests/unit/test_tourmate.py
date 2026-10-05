@@ -7,9 +7,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.agent import run_tourmate_pipeline
-from app.database import get_workflow_state, list_recent_workflows, get_db_connection
+from app.database import get_workflow_state, list_recent_workflows
 from app.fast_api_app import app
-from app.security import run_security_checkpoint, scrub_pii, detect_prompt_injection
+from app.security import detect_prompt_injection, run_security_checkpoint, scrub_pii
 from app.tools_catalog import (
     calculate_budget_feasibility,
     check_weather_and_seasonality,
@@ -17,7 +17,6 @@ from app.tools_catalog import (
     search_accommodations_and_dining,
     search_attractions,
 )
-
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 1. SECURITY & GUARDRAILS TESTS (Phase 4)

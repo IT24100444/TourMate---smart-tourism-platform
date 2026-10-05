@@ -1,6 +1,6 @@
 import asyncio
-import sys
 import io
+import sys
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -9,16 +9,17 @@ from google.adk.apps import App
 from google.adk.models import Gemini
 from google.adk.runners import Runner
 from google.genai import types
-from app.config import config
+
+from app.agent import security_checkpoint_tool
 from app.app_utils import services
+from app.config import config
 from app.tools_catalog import (
-    search_attractions,
-    search_accommodations_and_dining,
     calculate_budget_feasibility,
     check_weather_and_seasonality,
     get_destination_insights,
+    search_accommodations_and_dining,
+    search_attractions,
 )
-from app.agent import security_checkpoint_tool
 
 gemini_model = Gemini(
     model=config.model,
@@ -59,12 +60,12 @@ async def main():
     )
     user_id = "test_user_direct"
     session_id = "sess_direct_test_1"
-    
+
     new_message = types.Content(
         role="user",
         parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")]
     )
-    
+
     print("=== Sending Message to Direct Agent ===")
     async for event in runner.run_async(
         user_id=user_id,
