@@ -19,9 +19,6 @@ from app.tools_catalog import (
     search_attractions,
 )
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-
-
 gemini_model = Gemini(
     model=config.model,
     retry_options=types.HttpRetryOptions(attempts=3),
@@ -89,4 +86,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     asyncio.run(main())

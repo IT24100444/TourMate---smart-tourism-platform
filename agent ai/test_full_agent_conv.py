@@ -8,9 +8,6 @@ from google.genai import types
 from app.agent import app as adk_app
 from app.app_utils import services
 
-# Ensure utf-8 output on Windows
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-
 
 async def main():
     runner = Runner(
@@ -50,4 +47,5 @@ async def main():
 
 
 if __name__ == "__main__":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     asyncio.run(main())
