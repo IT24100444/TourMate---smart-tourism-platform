@@ -1,0 +1,32 @@
+# Virtual environment & caches
+.venv
+venv
+env
+ENV
+__pycache__
+*.py[cod]
+*$py.class
+.pytest_cache
+.coverage
+htmlcov
+.nox
+.tox
+
+# Local Environment Secrets & Runtime Databases
+.env
+*.db
+*.sqlite3
+tourmate_ai.db
+
+# Git & IDE metadata
+.git
+.gitignore
+.dockerignore
+.vscode
+.idea
+*.swp
+*~
+.DS_Store
+
+# Temporary scratch files
+scratch_*.py

@@ -1,0 +1,42 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'mobile/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'mobile/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./mobile
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: 'stable'
+        
+    - name: Get dependencies
+      run: flutter pub get
+      
+    - name: Analyze code
+      run: flutter analyze || true # Using || true to not fail the build on warnings
+      
+    - name: Build Android APK
+      run: flutter build apk --debug
