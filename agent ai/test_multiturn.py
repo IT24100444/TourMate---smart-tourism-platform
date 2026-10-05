@@ -23,10 +23,19 @@ async def test_multiturn():
 
     # Turn 1: user says "i want to go sigiriya 5 day trip and my budget is 70000"
     print("\n--- TURN 1 ---")
-    msg1 = types.Content(role="user", parts=[types.Part.from_text(text="i want to go sigiriya 5 dat trip and my budget is 70000")])
+    msg1 = types.Content(
+        role="user",
+        parts=[
+            types.Part.from_text(
+                text="i want to go sigiriya 5 dat trip and my budget is 70000"
+            )
+        ],
+    )
     tools1 = []
     text1 = []
-    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=msg1):
+    async for event in runner.run_async(
+        user_id=user_id, session_id=session_id, new_message=msg1
+    ):
         if event.content and event.content.parts:
             for p in event.content.parts:
                 if getattr(p, "function_call", None):
@@ -39,10 +48,17 @@ async def test_multiturn():
 
     # Turn 2: user replies to the agent's question
     print("\n--- TURN 2 ---")
-    msg2 = types.Content(role="user", parts=[types.Part.from_text(text="yes please recommend cheaper local guesthouses")])
+    msg2 = types.Content(
+        role="user",
+        parts=[
+            types.Part.from_text(text="yes please recommend cheaper local guesthouses")
+        ],
+    )
     tools2 = []
     text2 = []
-    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=msg2):
+    async for event in runner.run_async(
+        user_id=user_id, session_id=session_id, new_message=msg2
+    ):
         if event.content and event.content.parts:
             for p in event.content.parts:
                 if getattr(p, "function_call", None):
@@ -52,6 +68,7 @@ async def test_multiturn():
     print("Turn 2 Tools:", tools2)
     reply2 = "\n\n".join(text2)
     print("Turn 2 Reply:\n", reply2[:400], "...\n")
+
 
 if __name__ == "__main__":
     asyncio.run(test_multiturn())

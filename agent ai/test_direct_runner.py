@@ -20,7 +20,11 @@ async def main():
 
     new_message = types.Content(
         role="user",
-        parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")]
+        parts=[
+            types.Part.from_text(
+                text="i want go nine arch, 6 days and around 90,000 budget"
+            )
+        ],
     )
 
     print("Starting runner.run_async...")
@@ -34,6 +38,7 @@ async def main():
     except Exception as e:
         print(f"EXCEPTION CAUGHT: {e}")
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -18,7 +18,14 @@ async def test_chat():
     user_id = "test_user_chat"
     session_id = f"sess_{uuid.uuid4().hex[:12]}"
 
-    msg = types.Content(role="user", parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")])
+    msg = types.Content(
+        role="user",
+        parts=[
+            types.Part.from_text(
+                text="i want go nine arch, 6 days and around 90,000 budget"
+            )
+        ],
+    )
     tools_called = []
     text_parts = []
 
@@ -38,7 +45,10 @@ async def test_chat():
     print("SESSION ID:", session_id)
     print("TOOLS CALLED:", tools_called)
     print("REPLY LENGTH:", len(reply))
-    print("REPLY PREVIEW:", reply[:300].encode('ascii', errors='ignore').decode('ascii'))
+    print(
+        "REPLY PREVIEW:", reply[:300].encode("ascii", errors="ignore").decode("ascii")
+    )
+
 
 if __name__ == "__main__":
     asyncio.run(test_chat())

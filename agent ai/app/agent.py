@@ -40,9 +40,11 @@ gemini_model = Gemini(
     # 1024 tokens is enough for all TourMate sub-agent responses.
     generation_config=types.GenerateContentConfig(
         max_output_tokens=1024,
-        temperature=0.3,   # Low temp = focused, deterministic, fewer retry-worthy hallucinations
+        temperature=0.3,  # Low temp = focused, deterministic, fewer retry-worthy hallucinations
     ),
-    retry_options=types.HttpRetryOptions(attempts=2),  # Reduced from 3 → save retry quota
+    retry_options=types.HttpRetryOptions(
+        attempts=2
+    ),  # Reduced from 3 → save retry quota
 )
 
 
@@ -61,7 +63,7 @@ tourism_discovery_agent = LlmAgent(
         "Your role is to discover and recommend authentic Sri Lankan attractions, nature treks, "
         "cultural landmarks, and optimal visiting hours for the requested destination. "
         "Always recommend at least 2 attractions with duration and entry fees in LKR."
-    )
+    ),
 )
 
 # Sub-Agent 2: Accommodation & Dining Agent (Member 2 - Hotels, Eco-lodges, Cuisine)
@@ -69,13 +71,17 @@ accommodation_dining_agent = LlmAgent(
     name="accommodation_dining_agent",
     description="Specialist agent for selecting verified hotels, eco-lodges, partner discount offers, and authentic culinary dining in Sri Lanka.",
     model=gemini_model,
-    tools=[search_accommodations_and_dining, search_excel_partner_offers_tool, search_live_web_accommodation_tool],
+    tools=[
+        search_accommodations_and_dining,
+        search_excel_partner_offers_tool,
+        search_live_web_accommodation_tool,
+    ],
     instruction=(
         "You are the specialist Accommodation & Dining Agent for TourMate Sri Lanka. "
         "Your role is to select verified tourist hotels, exclusive partner discount offers, and authentic dining venues "
         "(wood-fired clay-pot curries, fresh seafood, hoppers) matching the tourist's destination "
         "and target budget. Provide verified options with transparent LKR pricing and promo codes."
-    )
+    ),
 )
 
 # Sub-Agent 3: Booking Feasibility & Constraint Agent (Member 3 - Financials & Weather)
@@ -89,7 +95,7 @@ booking_feasibility_agent = LlmAgent(
         "Calculate total costs (accommodation + dining + activities + local transport buffer), "
         "verify that the itinerary strictly respects the tourist's budget ceiling, "
         "and assess weather conditions for the destination."
-    )
+    ),
 )
 
 
@@ -103,6 +109,7 @@ booking_feasibility_tool = AgentTool(agent=booking_feasibility_agent)
 # WORKFLOW NODE FUNCTIONS (Phases 2, 4, & 5)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 async def execute_security_checkpoint(ctx: Context) -> str:
     """Executes PII scrubbing, injection defense, and domain validation (Security Checkpoint Gate)."""
     state = ctx.state
@@ -115,7 +122,7 @@ async def execute_security_checkpoint(ctx: Context) -> str:
         objective=objective,
         destination=destination,
         budget_lkr=budget_lkr,
-        workflow_id=wf_id
+        workflow_id=wf_id,
     )
 
     state["security_check"] = sec_result
@@ -136,10 +143,12 @@ async def execute_security_event(ctx: Context) -> None:
     state = ctx.state
     state["status"] = "Rejected"
     state["current_node"] = "security_event"
-    state.setdefault("history_log", []).append({
-        "node": "security_checkpoint",
-        "action": f"SECURITY EVENT: {state.get('error_reason')}. Workflow halted."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "security_checkpoint",
+            "action": f"SECURITY EVENT: {state.get('error_reason')}. Workflow halted.",
+        }
+    )
     save_workflow_state(
         workflow_id=state["workflow_id"],
         trip_id=state.get("trip_id", "trip_unknown"),
@@ -149,7 +158,7 @@ async def execute_security_event(ctx: Context) -> None:
         total_estimated_lkr=0.0,
         status=state["status"],
         current_node="security_event",
-        state_data=state
+        state_data=state,
     )
 
 
@@ -160,11 +169,19 @@ async def execute_planner_coordinator(ctx: Context) -> str:
 
     # Extract trip duration dynamically from user objective (e.g. "5 day", "5-day", "3 days")
     obj = state.get("objective", "")
-    m = re.search(r'(\d+)\s*(?:-| )?\s*(?:day|dat)s?', obj, re.IGNORECASE)
+    m = re.search(r"(\d+)\s*(?:-| )?\s*(?:day|dat)s?", obj, re.IGNORECASE)
     if m:
         days = int(m.group(1))
     else:
-        word_map = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6, 'seven': 7}
+        word_map = {
+            "one": 1,
+            "two": 2,
+            "three": 3,
+            "four": 4,
+            "five": 5,
+            "six": 6,
+            "seven": 7,
+        }
         days = 2
         for w, val in word_map.items():
             if f"{w} day" in obj.lower() or f"{w}-day" in obj.lower():
@@ -172,10 +189,12 @@ async def execute_planner_coordinator(ctx: Context) -> str:
                 break
     state["duration_days"] = max(1, min(days, 14))
 
-    state.setdefault("history_log", []).append({
-        "node": "planner",
-        "action": f"Objective parsed for {state.get('destination')} ({state['duration_days']} days, Budget: LKR {state.get('budget_limit_lkr', 0):,.2f}). Delegating to specialist sub-agents."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "planner",
+            "action": f"Objective parsed for {state.get('destination')} ({state['duration_days']} days, Budget: LKR {state.get('budget_limit_lkr', 0):,.2f}). Delegating to specialist sub-agents.",
+        }
+    )
     return "next"
 
 
@@ -192,10 +211,12 @@ async def execute_tourism_discovery(ctx: Context) -> str:
 
     state["attractions"] = attractions
     state["destination_insights"] = insights
-    state.setdefault("history_log", []).append({
-        "node": "tourism_discovery",
-        "action": f"Tourism Discovery Agent discovered {len(attractions)} verified attractions in {destination}."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "tourism_discovery",
+            "action": f"Tourism Discovery Agent discovered {len(attractions)} verified attractions in {destination}.",
+        }
+    )
     return "next"
 
 
@@ -206,12 +227,16 @@ async def execute_accommodation_dining(ctx: Context) -> str:
     state["current_node"] = "accommodation_dining"
     set_shared_context(state)
 
-    businesses = search_accommodations_and_dining(destination=destination, venue_type="all")
+    businesses = search_accommodations_and_dining(
+        destination=destination, venue_type="all"
+    )
     state["businesses"] = businesses
-    state.setdefault("history_log", []).append({
-        "node": "accommodation_dining",
-        "action": f"Accommodation & Dining Agent selected {len(businesses)} verified lodging and restaurant options."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "accommodation_dining",
+            "action": f"Accommodation & Dining Agent selected {len(businesses)} verified lodging and restaurant options.",
+        }
+    )
     return "next"
 
 
@@ -234,8 +259,15 @@ async def execute_booking_feasibility(ctx: Context) -> str:
     nights = max(1, duration_days - 1)  # N-day trip has N-1 accommodation nights
     nightly_rate = hotels[0]["cost_lkr"] if hotels else 15000.0
     hotel_cost = nightly_rate * nights
-    dining_cost = sum(r["cost_lkr"] for r in restaurants[:2]) * duration_days if restaurants else 3500.0 * duration_days
-    activity_cost = sum(a.get("entry_fee_lkr", 0.0) for a in attractions[:min(len(attractions), duration_days + 1)])
+    dining_cost = (
+        sum(r["cost_lkr"] for r in restaurants[:2]) * duration_days
+        if restaurants
+        else 3500.0 * duration_days
+    )
+    activity_cost = sum(
+        a.get("entry_fee_lkr", 0.0)
+        for a in attractions[: min(len(attractions), duration_days + 1)]
+    )
 
     transport_buffer = 1500.0 * duration_days  # 1,500 LKR/day local transport buffer
     feasibility = calculate_budget_feasibility(
@@ -243,17 +275,19 @@ async def execute_booking_feasibility(ctx: Context) -> str:
         dining_cost=dining_cost,
         activities_cost=activity_cost,
         budget_limit_lkr=budget_limit,
-        transport_buffer_lkr=transport_buffer
+        transport_buffer_lkr=transport_buffer,
     )
     weather = check_weather_and_seasonality(destination=destination)
 
     state["feasibility"] = feasibility
     state["weather"] = weather
     state["total_estimated_lkr"] = feasibility["estimated_total_lkr"]
-    state.setdefault("history_log", []).append({
-        "node": "booking_feasibility",
-        "action": f"Booking Feasibility Agent completed constraint evaluation: Total LKR {state['total_estimated_lkr']:,.2f} ({feasibility['status_message']})."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "booking_feasibility",
+            "action": f"Booking Feasibility Agent completed constraint evaluation: Total LKR {state['total_estimated_lkr']:,.2f} ({feasibility['status_message']}).",
+        }
+    )
     return "next"
 
 
@@ -270,7 +304,9 @@ async def execute_deterministic_validator(ctx: Context) -> str:
 
     # Rule 1: Budget ceiling compliance
     if total_est > budget_limit:
-        errors.append(f"Budget exceeded! Total LKR {total_est:,.2f} exceeds ceiling LKR {budget_limit:,.2f}.")
+        errors.append(
+            f"Budget exceeded! Total LKR {total_est:,.2f} exceeds ceiling LKR {budget_limit:,.2f}."
+        )
 
     # Rule 2: Minimum attractions threshold
     if len(attractions) < 2:
@@ -281,21 +317,25 @@ async def execute_deterministic_validator(ctx: Context) -> str:
     if not has_hotel:
         errors.append("Multi-day itinerary lacks verified hotel accommodation.")
 
-    state["validation_passed"] = (len(errors) == 0)
+    state["validation_passed"] = len(errors) == 0
     state["validation_errors"] = errors
 
     if not state["validation_passed"]:
         state["status"] = "FailedSafe"
-        state.setdefault("history_log", []).append({
-            "node": "deterministic_validator",
-            "action": f"Validation failed: {'; '.join(errors)}"
-        })
+        state.setdefault("history_log", []).append(
+            {
+                "node": "deterministic_validator",
+                "action": f"Validation failed: {'; '.join(errors)}",
+            }
+        )
         return "VALIDATION_FAILED"
 
-    state.setdefault("history_log", []).append({
-        "node": "deterministic_validator",
-        "action": "Deterministic validation passed. All business constraints satisfied."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "deterministic_validator",
+            "action": "Deterministic validation passed. All business constraints satisfied.",
+        }
+    )
     return "VALIDATION_PASSED"
 
 
@@ -313,7 +353,7 @@ async def execute_failed_safe(ctx: Context) -> None:
         total_estimated_lkr=state.get("total_estimated_lkr", 0.0),
         status="FailedSafe",
         current_node="failed_safe",
-        state_data=state
+        state_data=state,
     )
 
 
@@ -324,12 +364,16 @@ async def execute_human_approval_gate(ctx: Context) -> str:
     state["status"] = "WaitingApproval"
     state["requires_human_approval"] = True
     dest = state.get("destination", "Sri Lanka")
-    state["high_impact_action"] = f"Confirm hotel reservation and guided permits in {dest} (Total: LKR {state.get('total_estimated_lkr', 0):,.2f})"
+    state["high_impact_action"] = (
+        f"Confirm hotel reservation and guided permits in {dest} (Total: LKR {state.get('total_estimated_lkr', 0):,.2f})"
+    )
 
-    state.setdefault("history_log", []).append({
-        "node": "human_approval_gate",
-        "action": "Plan finalized within budget. Execution paused awaiting human approval."
-    })
+    state.setdefault("history_log", []).append(
+        {
+            "node": "human_approval_gate",
+            "action": "Plan finalized within budget. Execution paused awaiting human approval.",
+        }
+    )
     return "next"
 
 
@@ -351,33 +395,82 @@ async def execute_final_itinerary(ctx: Context) -> None:
     if days_count == 2:
         day1_items = []
         if attractions:
-            day1_items.append({"time": "09:00 - 11:30", "type": "Attraction", "name": attractions[0]["name"], "cost": attractions[0]["entry_fee_lkr"]})
+            day1_items.append(
+                {
+                    "time": "09:00 - 11:30",
+                    "type": "Attraction",
+                    "name": attractions[0]["name"],
+                    "cost": attractions[0]["entry_fee_lkr"],
+                }
+            )
         if restaurants:
-            day1_items.append({"time": "12:30 - 14:00", "type": "Dining", "name": restaurants[0]["name"], "cost": restaurants[0]["cost_lkr"]})
+            day1_items.append(
+                {
+                    "time": "12:30 - 14:00",
+                    "type": "Dining",
+                    "name": restaurants[0]["name"],
+                    "cost": restaurants[0]["cost_lkr"],
+                }
+            )
         if hotels:
-            day1_items.append({"time": "14:30 - 15:30", "type": "Check-in", "name": hotels[0]["name"], "cost": hotels[0]["cost_lkr"]})
+            day1_items.append(
+                {
+                    "time": "14:30 - 15:30",
+                    "type": "Check-in",
+                    "name": hotels[0]["name"],
+                    "cost": hotels[0]["cost_lkr"],
+                }
+            )
         if len(attractions) > 1:
-            day1_items.append({"time": "16:00 - 18:30", "type": "Attraction", "name": attractions[1]["name"], "cost": attractions[1]["entry_fee_lkr"]})
+            day1_items.append(
+                {
+                    "time": "16:00 - 18:30",
+                    "type": "Attraction",
+                    "name": attractions[1]["name"],
+                    "cost": attractions[1]["entry_fee_lkr"],
+                }
+            )
 
         day2_items = []
         if len(attractions) > 2:
-            day2_items.append({"time": "07:30 - 11:30", "type": "Attraction", "name": attractions[2]["name"], "cost": attractions[2]["entry_fee_lkr"]})
+            day2_items.append(
+                {
+                    "time": "07:30 - 11:30",
+                    "type": "Attraction",
+                    "name": attractions[2]["name"],
+                    "cost": attractions[2]["entry_fee_lkr"],
+                }
+            )
         if len(restaurants) > 1:
-            day2_items.append({"time": "12:30 - 14:00", "type": "Dining", "name": restaurants[1]["name"], "cost": restaurants[1]["cost_lkr"]})
+            day2_items.append(
+                {
+                    "time": "12:30 - 14:00",
+                    "type": "Dining",
+                    "name": restaurants[1]["name"],
+                    "cost": restaurants[1]["cost_lkr"],
+                }
+            )
         if len(attractions) > 3:
-            day2_items.append({"time": "14:30 - 16:30", "type": "Attraction", "name": attractions[3]["name"], "cost": attractions[3]["entry_fee_lkr"]})
+            day2_items.append(
+                {
+                    "time": "14:30 - 16:30",
+                    "type": "Attraction",
+                    "name": attractions[3]["name"],
+                    "cost": attractions[3]["entry_fee_lkr"],
+                }
+            )
 
         days_list = [
             {
                 "day": 1,
                 "summary": f"{attractions[0]['name'] if attractions else 'Arrival'} & {restaurants[0]['name'] if restaurants else 'Local Dining'}",
-                "items": day1_items
+                "items": day1_items,
             },
             {
                 "day": 2,
                 "summary": f"{attractions[2]['name'] if len(attractions) > 2 else 'Exploration'} & Return",
-                "items": day2_items
-            }
+                "items": day2_items,
+            },
         ]
     else:
         days_list = []
@@ -385,30 +478,75 @@ async def execute_final_itinerary(ctx: Context) -> None:
             items = []
             if d == 1:
                 if attractions:
-                    items.append({"time": "09:00 - 11:30", "type": "Attraction", "name": attractions[0]["name"], "cost": attractions[0]["entry_fee_lkr"]})
+                    items.append(
+                        {
+                            "time": "09:00 - 11:30",
+                            "type": "Attraction",
+                            "name": attractions[0]["name"],
+                            "cost": attractions[0]["entry_fee_lkr"],
+                        }
+                    )
                 if restaurants:
-                    items.append({"time": "12:30 - 14:00", "type": "Dining", "name": restaurants[0]["name"], "cost": restaurants[0]["cost_lkr"]})
+                    items.append(
+                        {
+                            "time": "12:30 - 14:00",
+                            "type": "Dining",
+                            "name": restaurants[0]["name"],
+                            "cost": restaurants[0]["cost_lkr"],
+                        }
+                    )
                 if hotels:
-                    items.append({"time": "14:30 - 15:30", "type": "Check-in", "name": hotels[0]["name"], "cost": hotels[0]["cost_lkr"]})
+                    items.append(
+                        {
+                            "time": "14:30 - 15:30",
+                            "type": "Check-in",
+                            "name": hotels[0]["name"],
+                            "cost": hotels[0]["cost_lkr"],
+                        }
+                    )
                 if len(attractions) > 1:
-                    items.append({"time": "16:00 - 18:30", "type": "Attraction", "name": attractions[1]["name"], "cost": attractions[1]["entry_fee_lkr"]})
+                    items.append(
+                        {
+                            "time": "16:00 - 18:30",
+                            "type": "Attraction",
+                            "name": attractions[1]["name"],
+                            "cost": attractions[1]["entry_fee_lkr"],
+                        }
+                    )
             else:
                 a_idx = (d - 1) % len(attractions) if attractions else 0
                 r_idx = (d - 1) % len(restaurants) if restaurants else 0
                 if attractions:
-                    items.append({"time": "07:30 - 11:30", "type": "Attraction", "name": attractions[a_idx]["name"], "cost": attractions[a_idx]["entry_fee_lkr"]})
+                    items.append(
+                        {
+                            "time": "07:30 - 11:30",
+                            "type": "Attraction",
+                            "name": attractions[a_idx]["name"],
+                            "cost": attractions[a_idx]["entry_fee_lkr"],
+                        }
+                    )
                 if restaurants:
-                    items.append({"time": "12:30 - 14:00", "type": "Dining", "name": restaurants[r_idx]["name"], "cost": restaurants[r_idx]["cost_lkr"]})
+                    items.append(
+                        {
+                            "time": "12:30 - 14:00",
+                            "type": "Dining",
+                            "name": restaurants[r_idx]["name"],
+                            "cost": restaurants[r_idx]["cost_lkr"],
+                        }
+                    )
                 next_a = (a_idx + 1) % len(attractions) if attractions else 0
                 if len(attractions) > 1 and next_a != a_idx:
-                    items.append({"time": "15:00 - 17:30", "type": "Attraction", "name": attractions[next_a]["name"], "cost": attractions[next_a]["entry_fee_lkr"]})
+                    items.append(
+                        {
+                            "time": "15:00 - 17:30",
+                            "type": "Attraction",
+                            "name": attractions[next_a]["name"],
+                            "cost": attractions[next_a]["entry_fee_lkr"],
+                        }
+                    )
 
             summary = items[0]["name"] if items else f"Day {d} Exploration"
-            days_list.append({
-                "day": d,
-                "summary": summary,
-                "items": items
-            })
+            days_list.append({"day": d, "summary": summary, "items": items})
 
     itinerary = {
         "title": f"Personalized {days_count}-Day {dest} Expedition",
@@ -419,7 +557,7 @@ async def execute_final_itinerary(ctx: Context) -> None:
         "savings_percentage": state.get("feasibility", {}).get("savings_percentage", 0),
         "days": days_list,
         "travel_insights": state.get("destination_insights", {}),
-        "weather_advisory": state.get("weather", {})
+        "weather_advisory": state.get("weather", {}),
     }
 
     state["final_itinerary"] = itinerary
@@ -434,7 +572,7 @@ async def execute_final_itinerary(ctx: Context) -> None:
         total_estimated_lkr=total_est,
         status=state.get("status", "WaitingApproval"),
         current_node="final_output",
-        state_data=state
+        state_data=state,
     )
 
 
@@ -443,9 +581,13 @@ security_checkpoint_node = node(execute_security_checkpoint, name="security_chec
 security_event_node = node(execute_security_event, name="security_event")
 planner_coordinator_node = node(execute_planner_coordinator, name="planner_coordinator")
 tourism_discovery_node = node(execute_tourism_discovery, name="tourism_discovery")
-accommodation_dining_node = node(execute_accommodation_dining, name="accommodation_dining")
+accommodation_dining_node = node(
+    execute_accommodation_dining, name="accommodation_dining"
+)
 booking_feasibility_node = node(execute_booking_feasibility, name="booking_feasibility")
-deterministic_validator_node = node(execute_deterministic_validator, name="deterministic_validator")
+deterministic_validator_node = node(
+    execute_deterministic_validator, name="deterministic_validator"
+)
 failed_safe_node = node(execute_failed_safe, name="failed_safe")
 human_approval_gate_node = node(execute_human_approval_gate, name="human_approval_gate")
 final_itinerary_node = node(execute_final_itinerary, name="final_itinerary")
@@ -460,16 +602,32 @@ tourmate_workflow = Workflow(
     description="Multi-agent Sri Lanka tourism planning workflow with security gate and deterministic validation.",
     edges=[
         Edge(from_node=START, to_node=security_checkpoint_node),
-        Edge(from_node=security_checkpoint_node, to_node=security_event_node, route="SECURITY_EVENT"),
-        Edge(from_node=security_checkpoint_node, to_node=planner_coordinator_node, route="PROCEED"),
+        Edge(
+            from_node=security_checkpoint_node,
+            to_node=security_event_node,
+            route="SECURITY_EVENT",
+        ),
+        Edge(
+            from_node=security_checkpoint_node,
+            to_node=planner_coordinator_node,
+            route="PROCEED",
+        ),
         Edge(from_node=planner_coordinator_node, to_node=tourism_discovery_node),
         Edge(from_node=tourism_discovery_node, to_node=accommodation_dining_node),
         Edge(from_node=accommodation_dining_node, to_node=booking_feasibility_node),
         Edge(from_node=booking_feasibility_node, to_node=deterministic_validator_node),
-        Edge(from_node=deterministic_validator_node, to_node=failed_safe_node, route="VALIDATION_FAILED"),
-        Edge(from_node=deterministic_validator_node, to_node=human_approval_gate_node, route="VALIDATION_PASSED"),
+        Edge(
+            from_node=deterministic_validator_node,
+            to_node=failed_safe_node,
+            route="VALIDATION_FAILED",
+        ),
+        Edge(
+            from_node=deterministic_validator_node,
+            to_node=human_approval_gate_node,
+            route="VALIDATION_PASSED",
+        ),
         Edge(from_node=human_approval_gate_node, to_node=final_itinerary_node),
-    ]
+    ],
 )
 
 
@@ -477,9 +635,14 @@ tourmate_workflow = Workflow(
 # ROOT AGENT & APP EXPORT
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def security_checkpoint_tool(objective: str, destination: str, budget_lkr: float) -> str:
+
+def security_checkpoint_tool(
+    objective: str, destination: str, budget_lkr: float
+) -> str:
     """Security Checkpoint tool for verifying PII, prompt injections, and domain bounds."""
-    res = run_security_checkpoint(objective=objective, destination=destination, budget_lkr=budget_lkr)
+    res = run_security_checkpoint(
+        objective=objective, destination=destination, budget_lkr=budget_lkr
+    )
     return json.dumps(res)
 
 
@@ -521,8 +684,10 @@ app = App(
 # PROGRAMMATIC EXECUTION HELPER (For FastAPI & Test suites)
 # ═══════════════════════════════════════════════════════════════════════════════
 
+
 class WorkflowContext:
     """Lightweight context container providing state access for pipeline execution."""
+
     def __init__(self, state: dict[str, Any]):
         self.state = state
 
@@ -532,7 +697,7 @@ async def run_tourmate_pipeline(
     objective: str,
     budget_lkr: float,
     destination: str,
-    workflow_id: str | None = None
+    workflow_id: str | None = None,
 ) -> dict[str, Any]:
     """Runs the complete multi-agent pipeline sequentially with state persistence."""
     wf_id = workflow_id if workflow_id else str(uuid.uuid4())

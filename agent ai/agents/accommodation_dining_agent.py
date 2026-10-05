@@ -39,10 +39,18 @@ class GeneralWebRecommendation(BaseModel):
 class AccommodationDiningResult(BaseModel):
     query: str = Field(description="Original search query")
     location: str = Field(description="Target location")
-    total_partner_deals_found: int = Field(description="Number of special partner offers found")
-    special_partner_offers: list[dict[str, Any]] = Field(default_factory=list, description="Exclusive partner deals from Excel DB")
-    general_web_recommendations: list[dict[str, Any]] = Field(default_factory=list, description="Live web search recommendations")
-    synthesis_summary: str = Field(description="Merged executive recommendation summary")
+    total_partner_deals_found: int = Field(
+        description="Number of special partner offers found"
+    )
+    special_partner_offers: list[dict[str, Any]] = Field(
+        default_factory=list, description="Exclusive partner deals from Excel DB"
+    )
+    general_web_recommendations: list[dict[str, Any]] = Field(
+        default_factory=list, description="Live web search recommendations"
+    )
+    synthesis_summary: str = Field(
+        description="Merged executive recommendation summary"
+    )
 
 
 ACCOMMODATION_DINING_SYSTEM_PROMPT = """
@@ -73,22 +81,32 @@ class AccommodationDiningAgent:
         Step 2: Live Web Search Query
         Step 3: Synthesis into combined response payload
         """
-        logger.info(f"AccommodationDiningAgent processing query='{query}', location='{location}'")
+        logger.info(
+            f"AccommodationDiningAgent processing query='{query}', location='{location}'"
+        )
 
         # Step 1: Query internal Excel discount database
-        excel_results = search_excel_offers(query=query, location=location, file_path=self.excel_path)
+        excel_results = search_excel_offers(
+            query=query, location=location, file_path=self.excel_path
+        )
         partner_offers = [r for r in excel_results if r.get("is_partner_offer")]
 
         # Step 2: Query live web search
-        web_results = search_live_accommodation_and_dining(query=query, location=location)
+        web_results = search_live_accommodation_and_dining(
+            query=query, location=location
+        )
 
         # Step 3: Synthesize combined output payload
         synthesis_lines = []
         loc_str = location.title() if location else "Sri Lanka"
-        synthesis_lines.append(f"### TourMate Accommodation & Dining Guide for {loc_str}\n")
+        synthesis_lines.append(
+            f"### TourMate Accommodation & Dining Guide for {loc_str}\n"
+        )
 
         if partner_offers:
-            synthesis_lines.append(f"🌟 **Exclusive TourMate Partner Deals ({len(partner_offers)} Found):**")
+            synthesis_lines.append(
+                f"🌟 **Exclusive TourMate Partner Deals ({len(partner_offers)} Found):**"
+            )
             for deal in partner_offers:
                 synthesis_lines.append(
                     f"- **{deal['name']}** ({deal['category']} in {deal['location']})\n"
@@ -99,20 +117,34 @@ class AccommodationDiningAgent:
                 )
             synthesis_lines.append("")
         else:
-            synthesis_lines.append("ℹ️ *No exclusive partner promo codes were found for this specific query, but top live web recommendations are listed below.* \n")
+            synthesis_lines.append(
+                "INFO: *No exclusive partner promo codes were found for this specific query, but top live web recommendations are listed below.* \n"
+            )
 
         if web_results:
-            synthesis_lines.append("🌐 **Live Web Recommendations & Top Rated Options:**")
+            synthesis_lines.append(
+                "🌐 **Live Web Recommendations & Top Rated Options:**"
+            )
             for web_item in web_results:
-                rating_info = f" | Rating: {web_item.get('rating')}" if web_item.get('rating') else ""
-                price_info = f" | Price: {web_item.get('price_range')}" if web_item.get('price_range') else ""
+                rating_info = (
+                    f" | Rating: {web_item.get('rating')}"
+                    if web_item.get("rating")
+                    else ""
+                )
+                price_info = (
+                    f" | Price: {web_item.get('price_range')}"
+                    if web_item.get("price_range")
+                    else ""
+                )
                 synthesis_lines.append(
                     f"- **{web_item['title']}**{rating_info}{price_info}\n"
                     f"  - {web_item['snippet']}"
                 )
             synthesis_lines.append("")
 
-        synthesis_lines.append("💡 **TourMate Tip:** Quote the promo code directly at partner venues during check-in or reservation to claim your discount!")
+        synthesis_lines.append(
+            "💡 **TourMate Tip:** Quote the promo code directly at partner venues during check-in or reservation to claim your discount!"
+        )
 
         summary_text = "\n".join(synthesis_lines)
 
@@ -122,13 +154,15 @@ class AccommodationDiningAgent:
             total_partner_deals_found=len(partner_offers),
             special_partner_offers=partner_offers,
             general_web_recommendations=web_results,
-            synthesis_summary=summary_text
+            synthesis_summary=summary_text,
         )
 
         return result_payload.model_dump()
 
 
-def process_accommodation_and_dining_request(query: str, location: str = "") -> dict[str, Any]:
+def process_accommodation_and_dining_request(
+    query: str, location: str = ""
+) -> dict[str, Any]:
     """
     Functional helper entrypoint for the Accommodation & Dining Agent.
     """

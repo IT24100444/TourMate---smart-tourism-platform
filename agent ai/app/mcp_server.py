@@ -28,26 +28,39 @@ mcp = FastMCP("tourmate_tourism_mcp")
 
 
 @mcp.tool()
-def search_attractions(destination: str, category: str = "all", max_entry_fee: float | None = None) -> list[dict[str, Any]]:
+def search_attractions(
+    destination: str, category: str = "all", max_entry_fee: float | None = None
+) -> list[dict[str, Any]]:
     """
     Search approved tourist attractions in Sri Lanka (e.g. Ella, Kandy, Galle, Sigiriya)
     filtered by destination, activity category, and maximum entry fee in LKR.
     """
-    return _search_attractions(destination=destination, category=category, max_entry_fee=max_entry_fee)
+    return _search_attractions(
+        destination=destination, category=category, max_entry_fee=max_entry_fee
+    )
 
 
 @mcp.tool()
-def search_accommodations_and_dining(destination: str, venue_type: str = "all", max_cost_lkr: float | None = None) -> list[dict[str, Any]]:
+def search_accommodations_and_dining(
+    destination: str, venue_type: str = "all", max_cost_lkr: float | None = None
+) -> list[dict[str, Any]]:
     """
     Find verified hotels, eco-resorts, and authentic dining venues in Sri Lanka.
     venue_type can be 'Hotel', 'Restaurant', or 'all'.
     """
-    return _search_accommodations_and_dining(destination=destination, venue_type=venue_type, max_cost_lkr=max_cost_lkr)
+    return _search_accommodations_and_dining(
+        destination=destination, venue_type=venue_type, max_cost_lkr=max_cost_lkr
+    )
 
 
 @mcp.tool()
-def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activities_cost: float,
-                                 budget_limit_lkr: float, transport_buffer_lkr: float = 5500.0) -> dict[str, Any]:
+def calculate_budget_feasibility(
+    hotel_cost: float,
+    dining_cost: float,
+    activities_cost: float,
+    budget_limit_lkr: float,
+    transport_buffer_lkr: float = 5500.0,
+) -> dict[str, Any]:
     """
     Calculates total proposed trip expenses including local transport/tuk-tuk buffer
     and verifies strict compliance with the tourist's budget ceiling in LKR.
@@ -57,17 +70,21 @@ def calculate_budget_feasibility(hotel_cost: float, dining_cost: float, activiti
         dining_cost=dining_cost,
         activities_cost=activities_cost,
         budget_limit_lkr=budget_limit_lkr,
-        transport_buffer_lkr=transport_buffer_lkr
+        transport_buffer_lkr=transport_buffer_lkr,
     )
 
 
 @mcp.tool()
-def check_weather_and_seasonality(destination: str, travel_month: str = "current") -> dict[str, Any]:
+def check_weather_and_seasonality(
+    destination: str, travel_month: str = "current"
+) -> dict[str, Any]:
     """
     Retrieves climate profile, monsoon patterns, recommended gear, and best visiting hours
     for any destination in Sri Lanka.
     """
-    return _check_weather_and_seasonality(destination=destination, travel_month=travel_month)
+    return _check_weather_and_seasonality(
+        destination=destination, travel_month=travel_month
+    )
 
 
 @mcp.tool()

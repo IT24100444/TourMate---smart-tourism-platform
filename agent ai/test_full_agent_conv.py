@@ -2,14 +2,14 @@ import asyncio
 import io
 import sys
 
-# Ensure utf-8 output on Windows
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
 from google.adk.runners import Runner
 from google.genai import types
 
 from app.agent import app as adk_app
 from app.app_utils import services
+
+# Ensure utf-8 output on Windows
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 
 
 async def main():
@@ -24,7 +24,11 @@ async def main():
 
     new_message = types.Content(
         role="user",
-        parts=[types.Part.from_text(text="i want go nine arch, 6 days and around 90,000 budget")]
+        parts=[
+            types.Part.from_text(
+                text="i want go nine arch, 6 days and around 90,000 budget"
+            )
+        ],
     )
 
     print("=== Sending User Message ===")
@@ -38,9 +42,12 @@ async def main():
                 if getattr(p, "text", None):
                     print(f"\n[AGENT SAYS]:\n{p.text}")
                 elif getattr(p, "function_call", None):
-                    print(f"\n[CALL TOOL]: {p.function_call.name}({p.function_call.args})")
+                    print(
+                        f"\n[CALL TOOL]: {p.function_call.name}({p.function_call.args})"
+                    )
                 elif getattr(p, "function_response", None):
                     print(f"\n[TOOL RESPONSE]: {p.function_response.name}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

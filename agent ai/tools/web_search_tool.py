@@ -19,7 +19,7 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.8/5 (1,240 reviews)",
             "operating_hours": "Open 24 Hours",
             "price_range": "LKR 55,000 - 75,000 / night",
-            "source": "Web Live Index (Booking.com / TripAdvisor)"
+            "source": "Web Live Index (Booking.com / TripAdvisor)",
         },
         {
             "title": "Cafe Chill Ella - Famous Restaurant & Bar",
@@ -27,7 +27,7 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.6/5 (3,100 reviews)",
             "operating_hours": "08:00 AM - 11:30 PM",
             "price_range": "LKR 2,500 - 5,000 per person",
-            "source": "Web Live Index (Google Places)"
+            "source": "Web Live Index (Google Places)",
         },
         {
             "title": "Mountain Heaven Ella Villa",
@@ -35,8 +35,8 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.5/5 (620 reviews)",
             "operating_hours": "Open 24 Hours",
             "price_range": "LKR 22,000 - 35,000 / night",
-            "source": "Web Live Index (Agoda)"
-        }
+            "source": "Web Live Index (Agoda)",
+        },
     ],
     "kandy": [
         {
@@ -45,7 +45,7 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.6/5 (2,400 reviews)",
             "operating_hours": "Open 24 Hours",
             "price_range": "LKR 45,000 - 65,000 / night",
-            "source": "Web Live Index (TripAdvisor)"
+            "source": "Web Live Index (TripAdvisor)",
         },
         {
             "title": "Slightly Chilled Lounge Rooftop Kandy",
@@ -53,8 +53,8 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.5/5 (1,850 reviews)",
             "operating_hours": "11:00 AM - 11:00 PM",
             "price_range": "LKR 3,000 - 6,000 per person",
-            "source": "Web Live Index (Google Places)"
-        }
+            "source": "Web Live Index (Google Places)",
+        },
     ],
     "colombo": [
         {
@@ -63,7 +63,7 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.7/5 (4,100 reviews)",
             "operating_hours": "Open 24 Hours",
             "price_range": "LKR 60,000 - 95,000 / night",
-            "source": "Web Live Index (Booking.com)"
+            "source": "Web Live Index (Booking.com)",
         },
         {
             "title": "Ministry of Crab Dutch Hospital Colombo",
@@ -71,8 +71,8 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.6/5 (3,800 reviews)",
             "operating_hours": "12:00 PM - 10:30 PM",
             "price_range": "LKR 12,000 - 25,000 per person",
-            "source": "Web Live Index (Asia's 50 Best)"
-        }
+            "source": "Web Live Index (Asia's 50 Best)",
+        },
     ],
     "galle": [
         {
@@ -81,7 +81,7 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.8/5 (950 reviews)",
             "operating_hours": "Open 24 Hours",
             "price_range": "LKR 90,000 - 140,000 / night",
-            "source": "Web Live Index (Luxury Hotels)"
+            "source": "Web Live Index (Luxury Hotels)",
         },
         {
             "title": "The Pedlar's Inn Cafe & Pizzeria Galle Fort",
@@ -89,15 +89,14 @@ FALLBACK_WEB_RESULTS: dict[str, list[dict[str, Any]]] = {
             "rating": "4.5/5 (1,400 reviews)",
             "operating_hours": "08:30 AM - 10:00 PM",
             "price_range": "LKR 2,000 - 4,500 per person",
-            "source": "Web Live Index (TripAdvisor)"
-        }
-    ]
+            "source": "Web Live Index (TripAdvisor)",
+        },
+    ],
 }
 
 
 def search_live_accommodation_and_dining(
-    query: str,
-    location: str | None = None
+    query: str, location: str | None = None
 ) -> list[dict[str, Any]]:
     """
     Performs live web search for hotel, resort, and restaurant listings, customer ratings,
@@ -117,31 +116,39 @@ def search_live_accommodation_and_dining(
     # Attempt Live DuckDuckGo Search
     try:
         from duckduckgo_search import DDGS
+
         with DDGS() as ddgs:
             raw_results = list(ddgs.text(keywords=enriched_query, max_results=5))
             for item in raw_results:
-                results.append({
-                    "title": item.get("title", "Web Result"),
-                    "snippet": item.get("body", ""),
-                    "url": item.get("href", ""),
-                    "source": "DuckDuckGo Live Web Search"
-                })
+                results.append(
+                    {
+                        "title": item.get("title", "Web Result"),
+                        "snippet": item.get("body", ""),
+                        "url": item.get("href", ""),
+                        "source": "DuckDuckGo Live Web Search",
+                    }
+                )
     except Exception as e:
-        logger.info(f"DuckDuckGo search unavailable or rate limited ({e}). Trying Tavily or structured fallback.")
+        logger.info(
+            f"DuckDuckGo search unavailable or rate limited ({e}). Trying Tavily or structured fallback."
+        )
 
     # Attempt Tavily Search if API Key present and DDGS gave no results
     if not results and os.getenv("TAVILY_API_KEY"):
         try:
             from tavily import TavilyClient
+
             client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
             tav_res = client.search(query=enriched_query, max_results=5)
             for item in tav_res.get("results", []):
-                results.append({
-                    "title": item.get("title", "Tavily Web Result"),
-                    "snippet": item.get("content", ""),
-                    "url": item.get("url", ""),
-                    "source": "Tavily Live Web Search"
-                })
+                results.append(
+                    {
+                        "title": item.get("title", "Tavily Web Result"),
+                        "snippet": item.get("content", ""),
+                        "url": item.get("url", ""),
+                        "source": "Tavily Live Web Search",
+                    }
+                )
         except Exception as e:
             logger.info(f"Tavily search skipped/failed: {e}")
 

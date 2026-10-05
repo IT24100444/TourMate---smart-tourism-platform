@@ -16,8 +16,11 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 logger = logging.getLogger("tourmate.database")
 
 # Load environment variables (fast_api_app already calls load_dotenv())
-SQLITE_URL = f"sqlite:///{os.path.join(os.path.dirname(__file__), '..', 'tourmate_ai.db')}"
+SQLITE_URL = (
+    f"sqlite:///{os.path.join(os.path.dirname(__file__), '..', 'tourmate_ai.db')}"
+)
 DATABASE_URL = os.getenv("DATABASE_URL", SQLITE_URL)
+
 
 # Create SQLAlchemy engine with graceful SQLite fallback if external PostgreSQL is unreachable
 def init_engine():
@@ -27,12 +30,16 @@ def init_engine():
             pass
         return eng
     except Exception as ex:
-        logger.warning(f"Unable to connect to primary DATABASE_URL ({ex}). Falling back to local SQLite at {SQLITE_URL}")
+        logger.warning(
+            f"Unable to connect to primary DATABASE_URL ({ex}). Falling back to local SQLite at {SQLITE_URL}"
+        )
         return create_engine(SQLITE_URL, echo=False, future=True, pool_pre_ping=True)
+
 
 engine = init_engine()
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 Base = declarative_base()
+
 
 # ORM models matching the original schema
 class Workflow(Base):
@@ -47,25 +54,34 @@ class Workflow(Base):
     current_node = Column(String, nullable=False)
     state_json = Column(Text, nullable=False)
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
-    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), onupdate=lambda: datetime.now(UTC))
+    updated_at = Column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
+    )
 
 
 class AuditLog(Base):
     __tablename__ = "audit_logs"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
+    timestamp = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
+    )
     workflow_id = Column(String, nullable=True)
     severity = Column(String, nullable=False)
     event_type = Column(String, nullable=False)
     message = Column(Text, nullable=False)
     details_json = Column(Text, nullable=True)
 
+
 # Initialize tables (creates if not exist)
 Base.metadata.create_all(bind=engine)
+
 
 # Helper to get a session
 def get_session() -> Session:
     return SessionLocal()
+
 
 def save_workflow_state(
     workflow_id: str,
@@ -106,6 +122,7 @@ def save_workflow_state(
     finally:
         session.close()
 
+
 def get_workflow_state(workflow_id: str) -> dict[str, Any] | None:
     """Return the stored workflow state as a dictionary, or None if not found."""
     session = get_session()
@@ -116,6 +133,7 @@ def get_workflow_state(workflow_id: str) -> dict[str, Any] | None:
         return None
     finally:
         session.close()
+
 
 def list_recent_workflows(limit: int = 10) -> list[dict[str, Any]]:
     """Return a list of recent workflow summaries ordered by update time descending."""
@@ -150,6 +168,7 @@ def list_recent_workflows(limit: int = 10) -> list[dict[str, Any]]:
     finally:
         session.close()
 
+
 def record_audit_log(
     severity: str,
     event_type: str,
@@ -173,6 +192,7 @@ def record_audit_log(
     finally:
         session.close()
 
+
 def list_audit_logs(limit: int = 20) -> list[dict[str, Any]]:
     """Retrieve the most recent audit log entries."""
     session = get_session()
@@ -192,6 +212,7 @@ def list_audit_logs(limit: int = 20) -> list[dict[str, Any]]:
         ]
     finally:
         session.close()
+
 
 def get_db_connection():
     """Returns a raw DB-API connection for compatibility."""

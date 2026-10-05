@@ -42,13 +42,24 @@ PROMPT_INJECTION_KEYWORDS = [
 
 # Supported Sri Lanka tourism destination hubs
 APPROVED_DESTINATIONS = [
-    "ella", "kandy", "galle", "colombo", "sigiriya", "nuwara eliya",
-    "mirissa", "trincomalee", "yala", "bentota", "anuradhapura", "jaffna", "dambulla"
+    "ella",
+    "kandy",
+    "galle",
+    "colombo",
+    "sigiriya",
+    "nuwara eliya",
+    "mirissa",
+    "trincomalee",
+    "yala",
+    "bentota",
+    "anuradhapura",
+    "jaffna",
+    "dambulla",
 ]
 
 # Business rules
 MAX_BUDGET_LKR = 50_000_000.0  # LKR 50M maximum tourist ceiling
-MIN_BUDGET_LKR = 5_000.0       # Minimum realistic budget for day trip
+MIN_BUDGET_LKR = 5_000.0  # Minimum realistic budget for day trip
 
 
 def scrub_pii(text: str) -> tuple[str, list[str]]:
@@ -76,14 +87,20 @@ def detect_prompt_injection(text: str) -> tuple[bool, list[str]]:
     return len(matched_patterns) > 0, matched_patterns
 
 
-def validate_domain_rules(destination: str, budget_lkr: float) -> tuple[bool, list[str]]:
+def validate_domain_rules(
+    destination: str, budget_lkr: float
+) -> tuple[bool, list[str]]:
     """Validates domain-specific rules (destination existence, realistic budget bounds)."""
     errors = []
 
     if budget_lkr < MIN_BUDGET_LKR:
-        errors.append(f"Budget LKR {budget_lkr:,.2f} is below minimum feasible trip limit of LKR {MIN_BUDGET_LKR:,.2f}.")
+        errors.append(
+            f"Budget LKR {budget_lkr:,.2f} is below minimum feasible trip limit of LKR {MIN_BUDGET_LKR:,.2f}."
+        )
     elif budget_lkr > MAX_BUDGET_LKR:
-        errors.append(f"Budget LKR {budget_lkr:,.2f} exceeds platform ceiling of LKR {MAX_BUDGET_LKR:,.2f}.")
+        errors.append(
+            f"Budget LKR {budget_lkr:,.2f} exceeds platform ceiling of LKR {MAX_BUDGET_LKR:,.2f}."
+        )
 
     dest_lower = destination.strip().lower()
     matched = any(d in dest_lower for d in APPROVED_DESTINATIONS)
@@ -96,8 +113,9 @@ def validate_domain_rules(destination: str, budget_lkr: float) -> tuple[bool, li
     return len(errors) == 0, errors
 
 
-def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
-                            workflow_id: str = "temp") -> dict[str, Any]:
+def run_security_checkpoint(
+    objective: str, destination: str, budget_lkr: float, workflow_id: str = "temp"
+) -> dict[str, Any]:
     """
     Executes the full Security Checkpoint:
     1. Redacts PII
@@ -113,7 +131,7 @@ def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
             event_type="PII_DETECTED",
             message=f"PII scrubbed from user input: {', '.join(detected_pii)}",
             workflow_id=workflow_id,
-            details={"detected_pii": detected_pii}
+            details={"detected_pii": detected_pii},
         )
 
     # 2. Prompt Injection Detection
@@ -124,14 +142,14 @@ def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
             event_type="PROMPT_INJECTION_DETECTED",
             message=f"Prompt injection attempt detected: {', '.join(injection_terms)}",
             workflow_id=workflow_id,
-            details={"matched_terms": injection_terms}
+            details={"matched_terms": injection_terms},
         )
         return {
             "passed": False,
             "route": "SECURITY_EVENT",
             "reason": f"Security violation: Prompt injection attempt detected ({', '.join(injection_terms)}).",
             "sanitized_objective": sanitized_objective,
-            "detected_pii": detected_pii
+            "detected_pii": detected_pii,
         }
 
     # 3. Domain Rules Validation
@@ -142,14 +160,14 @@ def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
             event_type="DOMAIN_RULE_VIOLATION",
             message=f"Domain rules violation: {'; '.join(domain_errors)}",
             workflow_id=workflow_id,
-            details={"errors": domain_errors}
+            details={"errors": domain_errors},
         )
         return {
             "passed": False,
             "route": "DOMAIN_VIOLATION",
             "reason": "; ".join(domain_errors),
             "sanitized_objective": sanitized_objective,
-            "detected_pii": detected_pii
+            "detected_pii": detected_pii,
         }
 
     # Success audit
@@ -158,7 +176,11 @@ def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
         event_type="SECURITY_CHECKPOINT_PASSED",
         message="Request cleared all security and domain policy gates.",
         workflow_id=workflow_id,
-        details={"destination": destination, "budget_lkr": budget_lkr, "pii_scrubbed": len(detected_pii) > 0}
+        details={
+            "destination": destination,
+            "budget_lkr": budget_lkr,
+            "pii_scrubbed": len(detected_pii) > 0,
+        },
     )
 
     return {
@@ -166,5 +188,5 @@ def run_security_checkpoint(objective: str, destination: str, budget_lkr: float,
         "route": "PROCEED",
         "reason": "Security and domain validation passed.",
         "sanitized_objective": sanitized_objective,
-        "detected_pii": detected_pii
+        "detected_pii": detected_pii,
     }

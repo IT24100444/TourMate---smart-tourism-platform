@@ -17,8 +17,7 @@ models_to_test = [
 for m in models_to_test:
     try:
         resp = client.models.generate_content(
-            model=m,
-            contents="Say hello in one word."
+            model=m, contents="Say hello in one word."
         )
         print(f"SUCCESS {m}: {resp.text.strip()}")
     except Exception as e:

@@ -10,21 +10,21 @@ payload = {
     "session_id": session_id,
     "new_message": {
         "role": "user",
-        "parts": [{"text": "i want go nine arch, 6 days and around 90,000 budget"}]
-    }
+        "parts": [{"text": "i want go nine arch, 6 days and around 90,000 budget"}],
+    },
 }
 
 req = urllib.request.Request(
     url,
-    data=json.dumps(payload).encode('utf-8'),
-    headers={'Content-Type': 'application/json'}
+    data=json.dumps(payload).encode("utf-8"),
+    headers={"Content-Type": "application/json"},
 )
 
 print("Sending request to /run...")
 sys.stdout.flush()
 try:
     with urllib.request.urlopen(req, timeout=120) as resp:
-        body = resp.read().decode('utf-8')
+        body = resp.read().decode("utf-8")
         print(f"Status: {resp.status}")
         data = json.loads(body)
         print(f"Received {len(data)} events:")
@@ -37,10 +37,14 @@ try:
                     print(f"--- Event {idx} Text ---")
                     print(p["text"])
                 if "functionCall" in p:
-                    print(f"--- Event {idx} Function Call: {p['functionCall']['name']} ---")
+                    print(
+                        f"--- Event {idx} Function Call: {p['functionCall']['name']} ---"
+                    )
                     print(p["functionCall"].get("args"))
                 if "functionResponse" in p:
-                    print(f"--- Event {idx} Function Response: {p['functionResponse']['name']} ---")
+                    print(
+                        f"--- Event {idx} Function Response: {p['functionResponse']['name']} ---"
+                    )
 except Exception as e:
     print(f"Error: {e}")
 sys.stdout.flush()

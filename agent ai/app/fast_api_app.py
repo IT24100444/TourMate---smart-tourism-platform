@@ -14,20 +14,33 @@
 
 import contextlib
 import os
+import uuid
 from collections.abc import AsyncIterator
 
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
+from google.genai import types as genai_types
+from pydantic import BaseModel
 
+from app.agent import app as adk_app
+from app.agent import root_agent, run_tourmate_pipeline
 from app.app_utils import services
 from app.app_utils.a2a import attach_a2a_routes
 from app.app_utils.reasoning_engine_adapter import (
     attach_reasoning_engine_routes,
 )
+from app.database import (
+    get_workflow_state,
+    list_audit_logs,
+    list_recent_workflows,
+    record_audit_log,
+    save_workflow_state,
+)
+from app.schemas import PlanRequest, ResumeRequest
 
 load_dotenv()
 allow_origins = (
@@ -77,10 +90,10 @@ app.description = "API for interacting with the Agent tourmate-ai"
 # Must be added AFTER get_fast_api_app() so it wraps all routes including ADK's.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],          # Allow all origins (mobile, web, emulator)
-    allow_credentials=False,      # False required when allow_origins=["*"]
-    allow_methods=["*"],          # Allow GET, POST, OPTIONS, etc.
-    allow_headers=["*"],          # Allow Content-Type, Authorization, etc.
+    allow_origins=["*"],  # Allow all origins (mobile, web, emulator)
+    allow_credentials=False,  # False required when allow_origins=["*"]
+    allow_methods=["*"],  # Allow GET, POST, OPTIONS, etc.
+    allow_headers=["*"],  # Allow Content-Type, Authorization, etc.
 )
 
 # Proxy routes so the Vertex AI Console Playground (reasoning_engine SDK) can
@@ -90,20 +103,6 @@ attach_reasoning_engine_routes(app)
 # ═══════════════════════════════════════════════════════════════════════════════
 # TOURMATE PLATFORM MICROSERVICE ENDPOINTS
 # ═══════════════════════════════════════════════════════════════════════════════
-
-from fastapi import HTTPException
-from pydantic import BaseModel
-
-from app.agent import app as adk_app
-from app.agent import run_tourmate_pipeline
-from app.database import (
-    get_workflow_state,
-    list_audit_logs,
-    list_recent_workflows,
-    record_audit_log,
-    save_workflow_state,
-)
-from app.schemas import PlanRequest, ResumeRequest
 
 
 # ─── Conversational Chat Schema ────────────────────────────────────────────
@@ -115,18 +114,14 @@ class ChatRequest(BaseModel):
 
 # ─── Shared ADK Runner for Conversational Chat ──────────────────────────────
 # We create one runner per process and reuse it (session state is per session_id).
-import uuid
-
-from google.genai import types as genai_types
-
 _chat_runner: Runner | None = None
+
 
 async def _get_chat_runner() -> Runner:
     global _chat_runner
     if _chat_runner is None:
-        from app.agent import app as _adk_app
         _chat_runner = Runner(
-            app=_adk_app,
+            app=adk_app,
             session_service=services.get_session_service(),
             artifact_service=services.get_artifact_service(),
             auto_create_session=True,
@@ -148,8 +143,7 @@ async def conversational_chat(request: ChatRequest):
     runner = await _get_chat_runner()
 
     new_message = genai_types.Content(
-        role="user",
-        parts=[genai_types.Part.from_text(text=request.message)]
+        role="user", parts=[genai_types.Part.from_text(text=request.message)]
     )
 
     tools_called = []
@@ -170,18 +164,27 @@ async def conversational_chat(request: ChatRequest):
     except Exception as e:
         error_msg = str(e)
         # Detect quota / rate limit / temporary demand spikes and return friendly message
-        if any(term in error_msg.upper() for term in ("RESOURCE_EXHAUSTED", "429", "503", "UNAVAILABLE", "HIGH DEMAND")):
+        if any(
+            term in error_msg.upper()
+            for term in (
+                "RESOURCE_EXHAUSTED",
+                "429",
+                "503",
+                "UNAVAILABLE",
+                "HIGH DEMAND",
+            )
+        ):
             return {
                 "session_id": session_id,
                 "reply": "I'm experiencing high demand right now. Please try again in 10-20 seconds. The TourMate AI pipeline is ready for your Sri Lanka adventure!",
                 "tools_called": [],
-                "error": "rate_limit"
+                "error": "rate_limit",
             }
         return {
             "session_id": session_id,
             "reply": f"An error occurred: {error_msg[:200]}",
             "tools_called": [],
-            "error": "pipeline_error"
+            "error": "pipeline_error",
         }
 
     reply = "\n\n".join(text_parts).strip()
@@ -189,7 +192,7 @@ async def conversational_chat(request: ChatRequest):
         "session_id": session_id,
         "reply": reply,
         "tools_called": tools_called,
-        "error": None
+        "error": None,
     }
 
 
@@ -207,9 +210,9 @@ async def health_check():
             "Accommodation & Dining Agent (Member 2)",
             "Booking Feasibility & Constraint Agent (Member 3)",
             "Deterministic Safety Validator",
-            "Security Checkpoint & Guardrails Gate"
+            "Security Checkpoint & Guardrails Gate",
         ],
-        "mcp_server": "Enabled (5 Sri Lanka tourism tools)"
+        "mcp_server": "Enabled (5 Sri Lanka tourism tools)",
     }
 
 
@@ -225,7 +228,7 @@ async def start_planning_workflow(request: PlanRequest):
         objective=request.objective,
         budget_lkr=request.budget_lkr,
         destination=request.destination,
-        workflow_id=request.workflow_id
+        workflow_id=request.workflow_id,
     )
 
     status_code_map = {
@@ -233,10 +236,11 @@ async def start_planning_workflow(request: PlanRequest):
         "WaitingApproval": 2,
         "Succeeded": 3,
         "FailedSafe": 4,
-        "Rejected": 5
+        "Rejected": 5,
     }
 
     import json
+
     return {
         "id": state["workflow_id"],
         "tripId": state.get("trip_id", request.trip_id),
@@ -247,7 +251,7 @@ async def start_planning_workflow(request: PlanRequest):
         "currentNode": state["current_node"],
         "totalEstimatedLkr": state.get("total_estimated_lkr", 0.0),
         "stateJson": json.dumps(state),
-        "finalSummaryJson": json.dumps(state.get("final_itinerary", {}))
+        "finalSummaryJson": json.dumps(state.get("final_itinerary", {})),
     }
 
 
@@ -259,35 +263,63 @@ async def resume_workflow(request: ResumeRequest):
     """
     state = get_workflow_state(request.workflow_id)
     if not state:
-        raise HTTPException(status_code=404, detail=f"Workflow run '{request.workflow_id}' not found in database.")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Workflow run '{request.workflow_id}' not found in database.",
+        )
 
     import json
+
     if request.decision == "Approved":
         state["status"] = "Succeeded"
         state["current_node"] = "human_approval_gate"
-        state.setdefault("history_log", []).append({
-            "node": "human_approval_gate",
-            "action": "Proposal APPROVED by authorized user. Bookings and reservations committed."
-        })
-        record_audit_log("INFO", "HITL_APPROVED", f"Workflow {request.workflow_id} approved by user.", request.workflow_id)
+        state.setdefault("history_log", []).append(
+            {
+                "node": "human_approval_gate",
+                "action": "Proposal APPROVED by authorized user. Bookings and reservations committed.",
+            }
+        )
+        record_audit_log(
+            "INFO",
+            "HITL_APPROVED",
+            f"Workflow {request.workflow_id} approved by user.",
+            request.workflow_id,
+        )
     elif request.decision == "Rejected":
         state["status"] = "Rejected"
         state["current_node"] = "human_approval_gate"
-        state.setdefault("history_log", []).append({
-            "node": "human_approval_gate",
-            "action": f"Proposal REJECTED by user. Reason: {request.notes or 'None provided'}."
-        })
-        record_audit_log("WARNING", "HITL_REJECTED", f"Workflow {request.workflow_id} rejected by user.", request.workflow_id)
+        state.setdefault("history_log", []).append(
+            {
+                "node": "human_approval_gate",
+                "action": f"Proposal REJECTED by user. Reason: {request.notes or 'None provided'}.",
+            }
+        )
+        record_audit_log(
+            "WARNING",
+            "HITL_REJECTED",
+            f"Workflow {request.workflow_id} rejected by user.",
+            request.workflow_id,
+        )
     elif request.decision == "RevisionRequested":
         state["status"] = "Running"
         state["current_node"] = "planner"
-        state.setdefault("history_log", []).append({
-            "node": "planner",
-            "action": f"Re-planning initiated with user feedback: '{request.notes}'."
-        })
-        record_audit_log("INFO", "HITL_REVISION", f"Workflow {request.workflow_id} revision requested.", request.workflow_id)
+        state.setdefault("history_log", []).append(
+            {
+                "node": "planner",
+                "action": f"Re-planning initiated with user feedback: '{request.notes}'.",
+            }
+        )
+        record_audit_log(
+            "INFO",
+            "HITL_REVISION",
+            f"Workflow {request.workflow_id} revision requested.",
+            request.workflow_id,
+        )
     else:
-        raise HTTPException(status_code=400, detail=f"Invalid decision '{request.decision}'. Expected Approved, Rejected, or RevisionRequested.")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid decision '{request.decision}'. Expected Approved, Rejected, or RevisionRequested.",
+        )
 
     # Save updated state
     save_workflow_state(
@@ -299,7 +331,7 @@ async def resume_workflow(request: ResumeRequest):
         total_estimated_lkr=state.get("total_estimated_lkr", 0.0),
         status=state["status"],
         current_node=state["current_node"],
-        state_data=state
+        state_data=state,
     )
 
     status_code_map = {
@@ -307,7 +339,7 @@ async def resume_workflow(request: ResumeRequest):
         "WaitingApproval": 2,
         "Succeeded": 3,
         "FailedSafe": 4,
-        "Rejected": 5
+        "Rejected": 5,
     }
 
     return {
@@ -316,7 +348,7 @@ async def resume_workflow(request: ResumeRequest):
         "status": status_code_map.get(state["status"], 1),
         "statusName": state["status"],
         "currentNode": state["current_node"],
-        "stateJson": json.dumps(state)
+        "stateJson": json.dumps(state),
     }
 
 
@@ -325,7 +357,9 @@ async def get_workflow_status(workflow_id: str):
     """Queries current workflow execution state from persistent storage."""
     state = get_workflow_state(workflow_id)
     if not state:
-        raise HTTPException(status_code=404, detail=f"Workflow '{workflow_id}' not found.")
+        raise HTTPException(
+            status_code=404, detail=f"Workflow '{workflow_id}' not found."
+        )
     return state
 
 
@@ -344,7 +378,7 @@ async def get_audit_records(limit: int = 20):
 # Main execution
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", "8000"))
     host = os.getenv("HOST", "0.0.0.0")
     uvicorn.run(app, host=host, port=port)
-

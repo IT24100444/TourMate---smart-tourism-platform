@@ -11,7 +11,9 @@ res = requests.post(create_session_url)
 print(f"Create session status: {res.status_code}")
 print(f"Session response: {res.text}")
 session_data = res.json()
-session_id = session_data.get("id") or session_data.get("session_id") or "test_session_1"
+session_id = (
+    session_data.get("id") or session_data.get("session_id") or "test_session_1"
+)
 
 # 2. Call /run with a user message
 run_url = f"{base_url}/run"
@@ -21,10 +23,8 @@ payload = {
     "session_id": session_id,
     "new_message": {
         "role": "user",
-        "parts": [
-            {"text": "i want go nine arch, 6 days and around 90,000 budget"}
-        ]
-    }
+        "parts": [{"text": "i want go nine arch, 6 days and around 90,000 budget"}],
+    },
 }
 print(f"\nSending message to /run with session {session_id}...")
 run_res = requests.post(run_url, json=payload, timeout=60)

@@ -1,4 +1,5 @@
-﻿"""Quick verification test for the multi-day pipeline fix."""
+"""Quick verification test for the multi-day pipeline fix."""
+
 import asyncio
 import sys
 
@@ -13,7 +14,9 @@ from app.tools_catalog import search_accommodations_and_dining, search_attractio
 
 async def test_budget_feasibility_5day():
     print("\n=== TEST: Budget feasibility scales correctly for 5-day trip ===")
-    businesses = search_accommodations_and_dining(destination="Sigiriya", venue_type="all")
+    businesses = search_accommodations_and_dining(
+        destination="Sigiriya", venue_type="all"
+    )
     attractions = search_attractions(destination="Sigiriya", category="all")
     state = {
         "destination": "Sigiriya",
@@ -31,9 +34,12 @@ async def test_budget_feasibility_5day():
     if hotels:
         nightly = hotels[0]["cost_lkr"]
         nights = 4
-        print(f"  Nightly hotel rate: LKR {nightly:,.0f} x {nights} nights = LKR {nightly*nights:,.0f}")
+        print(
+            f"  Nightly hotel rate: LKR {nightly:,.0f} x {nights} nights = LKR {nightly * nights:,.0f}"
+        )
         assert total > nightly, "Total must be greater than a single night rate"
     print("  PASS!")
+
 
 async def test_5day_sigiriya():
     print("\n=== TEST: 5-day Sigiriya trip LKR 120,000 ===")
@@ -52,9 +58,12 @@ async def test_5day_sigiriya():
     print(f"  Day count: {len(days)}")
     for d in days:
         print(f"    Day {d['day']}: {d['summary']}")
-    assert state.get("duration_days") == 5, f"Expected 5 days, got {state.get('duration_days')}"
+    assert state.get("duration_days") == 5, (
+        f"Expected 5 days, got {state.get('duration_days')}"
+    )
     assert len(days) == 5, f"Expected 5-day itinerary, got {len(days)}"
     print("  PASS!")
+
 
 async def test_2day_ella():
     print("\n=== TEST: 2-day Ella trip ===")
@@ -71,9 +80,12 @@ async def test_2day_ella():
     print(f"  Day count: {len(days)}")
     for d in days:
         print(f"    Day {d['day']}: {d['summary']}")
-    assert state.get("duration_days") == 2, f"Expected 2 days, got {state.get('duration_days')}"
+    assert state.get("duration_days") == 2, (
+        f"Expected 2 days, got {state.get('duration_days')}"
+    )
     assert len(days) == 2, f"Expected 2-day itinerary, got {len(days)}"
     print("  PASS!")
+
 
 asyncio.run(test_budget_feasibility_5day())
 asyncio.run(test_5day_sigiriya())

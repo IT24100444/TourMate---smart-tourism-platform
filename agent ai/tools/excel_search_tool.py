@@ -12,15 +12,15 @@ import pandas as pd
 
 logger = logging.getLogger("tourmate.tools.excel_search")
 
-DEFAULT_EXCEL_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "hotels_and_restaurants_offers.xlsx")
+DEFAULT_EXCEL_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "data", "hotels_and_restaurants_offers.xlsx"
+)
 _CACHED_EXCEL_RECORDS: list[dict[str, Any]] | None = None
 _CACHED_EXCEL_PATH: str | None = None
 
 
 def search_excel_offers(
-    query: str,
-    location: str | None = None,
-    file_path: str | None = None
+    query: str, location: str | None = None, file_path: str | None = None
 ) -> list[dict[str, Any]]:
     """
     Searches the internal Excel discount database by keyword, location, amenity, or category.
@@ -37,11 +37,13 @@ def search_excel_offers(
 
     if not os.path.exists(path_to_use):
         logger.warning(f"Excel discount file not found at path: {path_to_use}")
-        return [{
-            "error": f"Internal discount database file not found at path: {path_to_use}",
-            "is_partner_offer": False,
-            "status_message": "Excel database missing. Proceeding to live web search fallback."
-        }]
+        return [
+            {
+                "error": f"Internal discount database file not found at path: {path_to_use}",
+                "is_partner_offer": False,
+                "status_message": "Excel database missing. Proceeding to live web search fallback.",
+            }
+        ]
 
     global _CACHED_EXCEL_RECORDS, _CACHED_EXCEL_PATH
     if _CACHED_EXCEL_RECORDS is not None and _CACHED_EXCEL_PATH == path_to_use:
@@ -53,14 +55,39 @@ def search_excel_offers(
             for sheet in excel_file.sheet_names:
                 df = excel_file.parse(sheet).fillna("")
                 for _, row in df.iterrows():
-                    name = str(row.get("Hotel Name", "") or row.get("Name of Business", "") or row.get("Name", "")).strip()
+                    name = str(
+                        row.get("Hotel Name", "")
+                        or row.get("Name of Business", "")
+                        or row.get("Name", "")
+                    ).strip()
                     if not name or name.lower().startswith("unnamed"):
                         continue
-                    loc = str(row.get("Hotel Address", "") or row.get("Location ", "") or row.get("Location", "")).strip()
-                    cat = str(row.get("Business Type ", "") or row.get("Category", "") or ("Hotel" if "hotel" in sheet.lower() else sheet.strip())).strip()
-                    raw_offer = str(row.get("Offer percentage", "") or row.get("Offer Type ", "") or row.get("Discount_Offer", "")).strip()
-                    contact = str(row.get("phone Number", "") or row.get("Contact Person ", "") or row.get("Contact", "")).strip()
-                    details = str(row.get("Use Credit card ", "") or row.get("Bank ", "") or row.get("Description", "") or row.get("Offer_Details", "")).strip()
+                    loc = str(
+                        row.get("Hotel Address", "")
+                        or row.get("Location ", "")
+                        or row.get("Location", "")
+                    ).strip()
+                    cat = str(
+                        row.get("Business Type ", "")
+                        or row.get("Category", "")
+                        or ("Hotel" if "hotel" in sheet.lower() else sheet.strip())
+                    ).strip()
+                    raw_offer = str(
+                        row.get("Offer percentage", "")
+                        or row.get("Offer Type ", "")
+                        or row.get("Discount_Offer", "")
+                    ).strip()
+                    contact = str(
+                        row.get("phone Number", "")
+                        or row.get("Contact Person ", "")
+                        or row.get("Contact", "")
+                    ).strip()
+                    details = str(
+                        row.get("Use Credit card ", "")
+                        or row.get("Bank ", "")
+                        or row.get("Description", "")
+                        or row.get("Offer_Details", "")
+                    ).strip()
 
                     # Format discount percentage if numeric float like 0.25 -> 25% OFF
                     try:
@@ -70,38 +97,50 @@ def search_excel_offers(
                         else:
                             discount_str = f"{int(f_offer)}% OFF"
                     except (ValueError, TypeError):
-                        discount_str = raw_offer if raw_offer else "Exclusive Partner Deal"
+                        discount_str = (
+                            raw_offer if raw_offer else "Exclusive Partner Deal"
+                        )
 
-                    promo_code = f"TOURMATE{cat[:3].upper()}" if cat else "TOURMATEPARTNER"
+                    promo_code = (
+                        f"TOURMATE{cat[:3].upper()}" if cat else "TOURMATEPARTNER"
+                    )
                     std_rate = 18000.0 if "hotel" in cat.lower() else 3500.0
 
-                    all_records.append({
-                        "name": name,
-                        "category": cat,
-                        "location": loc,
-                        "cuisine_or_amenities": details,
-                        "standard_rate_lkr": std_rate,
-                        "discount_offer": discount_str,
-                        "promo_code": promo_code,
-                        "offer_details": f"Partner offer: {details}" if details else "Direct verified booking",
-                        "contact": contact if contact else "Via TourMate Concierge",
-                        "is_partner_offer": True
-                    })
+                    all_records.append(
+                        {
+                            "name": name,
+                            "category": cat,
+                            "location": loc,
+                            "cuisine_or_amenities": details,
+                            "standard_rate_lkr": std_rate,
+                            "discount_offer": discount_str,
+                            "promo_code": promo_code,
+                            "offer_details": f"Partner offer: {details}"
+                            if details
+                            else "Direct verified booking",
+                            "contact": contact if contact else "Via TourMate Concierge",
+                            "is_partner_offer": True,
+                        }
+                    )
             _CACHED_EXCEL_RECORDS = all_records
             _CACHED_EXCEL_PATH = path_to_use
         except Exception as e:
             logger.error(f"Failed to read Excel discount database: {e}")
-            return [{
-                "error": f"Failed to read Excel discount database: {e!s}",
-                "is_partner_offer": False,
-                "status_message": "Error accessing internal offers spreadsheet."
-            }]
+            return [
+                {
+                    "error": f"Failed to read Excel discount database: {e!s}",
+                    "is_partner_offer": False,
+                    "status_message": "Error accessing internal offers spreadsheet.",
+                }
+            ]
 
     if not all_records:
-        return [{
-            "message": "No internal partner offers available in database.",
-            "is_partner_offer": False
-        }]
+        return [
+            {
+                "message": "No internal partner offers available in database.",
+                "is_partner_offer": False,
+            }
+        ]
 
     # Normalize search terms
     clean_query = (query or "").strip().lower()
@@ -114,7 +153,10 @@ def search_excel_offers(
         # Check location filter if provided
         loc_matched = True
         if clean_location:
-            loc_matched = clean_location in rec["location"].lower() or clean_location in searchable_text
+            loc_matched = (
+                clean_location in rec["location"].lower()
+                or clean_location in searchable_text
+            )
 
         # Check general query match
         query_matched = True
@@ -126,12 +168,13 @@ def search_excel_offers(
             matches.append(rec)
 
     if not matches:
-        return [{
-            "message": f"No exclusive partner discounts found for query '{query}' in '{location or 'all locations'}'.",
-            "is_partner_offer": False,
-            "query": query,
-            "location": location
-        }]
+        return [
+            {
+                "message": f"No exclusive partner discounts found for query '{query}' in '{location or 'all locations'}'.",
+                "is_partner_offer": False,
+                "query": query,
+                "location": location,
+            }
+        ]
 
     return matches[:15]
-
